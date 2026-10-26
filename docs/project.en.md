@@ -79,6 +79,8 @@ The plugin uses Stream Deck's local WebSocket API and Node 24 runtime. It offers
 
 The status key normally refreshes every three seconds. A slow request finishes before another refresh begins. Green confirmation requires a valid correlated success response. Errors show an alert and a request to check status. Commands are never automatically retried.
 
+The inspector's **Test connection** reads status without executing production actions. Incorrect tokens, busy hosts, unreachable hosts and missing application connections each have a specific explanation. Late command responses cannot update a key after its settings or profile have changed. Elgato's official validator checks the manifest and assets in CI.
+
 ## Failure handling, security and data protection
 
 A timeout may occur after an application receives a command. Therefore `outcome_unknown` does not mean the action never happened. The operator must check status. COM cannot safely be forcibly cancelled; a slow call may finish after the client's timeout.

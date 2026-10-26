@@ -19,7 +19,7 @@ Kør fra repositoryets rod:
 dotnet restore ControlHub.slnx
 dotnet build ControlHub.slnx -c Release --no-restore
 dotnet test ControlHub.slnx -c Release --no-build
-node --test tests/streamdeck.test.cjs
+node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
 node scripts/check-policy.cjs
 ```
 
@@ -48,7 +48,8 @@ API-adressen er fast `http://127.0.0.1:5187`. Hostens token skal kopieres privat
 3. Start Stream Deck igen. Gruppen **Control Hub** skal nu være synlig.
 4. Træk **Næste slide / Next slide**, **Forrige slide / Previous slide**, **Skift scene / Switch scene** og **Status / Status** til din profil.
 5. Vælg Dansk eller English, indsæt det lokale token, udfyld eventuelle argumenter og tryk Gem/Save på hver knap.
-6. OBS-scener og lydkilder skal angives med deres præcise navne. Gå til slide kræver et positivt heltal. Lyd fra/til angiver ønsket tilstand; det er ikke en blind toggle.
+6. Tryk **Test forbindelse**. Testen bruger tokenet i feltet uden at gemme det og læser kun status. Den skifter ikke slide, scene, optagelse eller udsendelse. Den viser separat, om Control Hub, PowerPoint og OBS svarer. Gem tokenet med **Gem**, når opsætningen er korrekt.
+7. OBS-scener og lydkilder skal angives med deres præcise navne. Gå til slide kræver et positivt heltal. Lyd fra/til angiver ønsket tilstand; det er ikke en blind toggle.
 
 Dette er en manuel udviklingsinstallation fra kildekode. Der er ikke udgivet en Marketplace-pakke, installer, release eller tag.
 

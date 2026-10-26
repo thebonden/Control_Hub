@@ -10,6 +10,9 @@
 - Timeouts and cancellation distinguish not dispatched from unknown outcome.
 - PowerPoint adapter calls are tested against a fake session. Opening, saving, editing and closing are not actions.
 - OBS uses a local simulated WebSocket server: handshake, password challenge, fragmented replies, intervening events, request failures and mismatched correlation.
+- Elgato's official CLI 1.10.3 validates the plugin manifest and assets, including the main icon's PNG format. Validation is not a physical installation test.
+- The connection check is verified to send only a status GET and never save or echo the token in its reply. UI tests cover correlation, language, timeout and editing the token during a request.
+- Late success or failure must not appear on a reconfigured key or reused context.
 - Stream Deck uses simulated HTTP: key presses, argument mapping, overlap, failure feedback, missing token and status.
 - Host smoke test: authentication, Origin rejection, malformed JSON, version, actions and unavailable integrations.
 - Source policy: no presentation files and no known file-writing or focus operations in the PowerPoint adapter.

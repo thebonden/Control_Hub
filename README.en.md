@@ -39,7 +39,7 @@ Requirements: .NET 10 SDK; for the priority chain, Windows, desktop PowerPoint, 
 dotnet restore ControlHub.slnx
 dotnet build ControlHub.slnx --configuration Release --no-restore
 dotnet test ControlHub.slnx --configuration Release --no-build
-node --test tests/streamdeck.test.cjs
+node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
 ```
 
 Generate a random local token and start the host as described in [setup](docs/setup.en.md). Open the presentation and start its slideshow yourself. Enable OBS WebSocket and configure its password locally. Then install the Stream Deck plugin and configure the keys.

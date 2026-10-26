@@ -36,6 +36,19 @@ const post = body => fetch(base + "commands", {method:"POST",headers,body:JSON.s
     assert.equal(status.version,"0.0.001");
     assert.equal(status.plugins.find(p=>p.id==="androidremote").state,"not_implemented");
     assert.equal(status.plugins.find(p=>p.id==="obs").state,"unavailable");
-    console.log("Host smoke checks passed / Host-kontrol bestået");
+    const { createBridge } = require('../Plugins/StreamDeck/dk.thebonden.controlhub.sdPlugin/bridge.js');
+    const messages = [];
+    const bridge = createBridge(message => messages.push(message));
+    const action = 'dk.thebonden.controlhub.next';
+    await bridge.handle({event:'willAppear',context:'smoke-key',action,payload:{settings:{token}}});
+    await bridge.handle({event:'sendToPlugin',context:'smoke-key',action,
+      payload:{kind:'checkConnection',requestId:'smoke-check',token}});
+    assert.equal(messages.length,1);
+    assert.equal(messages[0].event,'sendToPropertyInspector');
+    assert.equal(messages[0].payload.requestId,'smoke-check');
+    assert.equal(messages[0].payload.code,'partial');
+    assert.equal(messages[0].payload.checks.find(p=>p.id==='obs').state,'unavailable');
+    assert.ok(!JSON.stringify(messages).includes(token));
+    console.log("Host and Stream Deck connection checks passed / Host- og Stream Deck-forbindelseskontrol bestået");
   } finally { child.kill(); }
 })().catch(error=>{ console.error(error); process.exitCode=1; });

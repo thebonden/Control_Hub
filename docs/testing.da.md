@@ -10,6 +10,9 @@
 - Timeout og annullering skelner mellem ikke afsendt og ukendt udfald.
 - PowerPoint-adapterens kald afprøves mod en falsk session. Åbning, gemning, redigering og lukning er ikke handlinger.
 - OBS testes mod en lokal simuleret WebSocket-server: håndtryk, password challenge, fragmenterede svar, mellemliggende events, requestfejl og forkert korrelation.
+- Elgatos officielle CLI 1.10.3 validerer pluginmanifest og aktiver, herunder hovedikonets PNG-format. Validering er ikke en fysisk installationstest.
+- Forbindelsestesten kontrolleres for kun at sende GET-status og aldrig gemme eller sende tokenet tilbage i et svar. UI-tests dækker korrelation, sprog, timeout og ændring af token under et kald.
+- Forsinket succes eller fejl må ikke vises på en nykonfigureret knap eller en genbrugt kontekst.
 - Stream Deck testes med simuleret HTTP: knaptryk, argumentmapping, overlap, fejlfeedback, manglende token og status.
 - Host-smoketest: adgang, Origin-afvisning, ugyldig JSON, version, handlinger og utilgængelige integrationer.
 - Kildekoderegler: ingen præsentationsfiler, ingen kendte filskrivnings- eller fokusoperationer i PowerPoint-adapteren.

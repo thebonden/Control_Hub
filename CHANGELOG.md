@@ -3,6 +3,9 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
+- Forbindelsestest i Stream Deck-indstillingerne med separat status for Control Hub, PowerPoint og OBS.
+- Beskyttelse mod forsinket knapfeedback efter profil-/indstillingsskift.
+- Hovedikon i krævet PNG-format og officiel Elgato-validering i CI.
 - C#/.NET 10-kontrakter, dispatcher og lokal autentificeret HTTP-host.
 - Eksplicit pluginsystem med ærlig status for ikke-implementerede integrationer.
 - PowerPoint COM-navigation på STA-tråd, uden filredigering eller tastaturgenveje.
@@ -13,6 +16,9 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
+- Connection check in Stream Deck settings with separate Control Hub, PowerPoint and OBS status.
+- Protection against late key feedback after profile/settings changes.
+- Main icon in the required PNG format and official Elgato validation in CI.
 - C#/.NET 10 contracts, dispatcher and authenticated local HTTP host.
 - Explicit plugin system with truthful status for unimplemented integrations.
 - PowerPoint COM navigation on an STA thread without file editing or keyboard shortcuts.

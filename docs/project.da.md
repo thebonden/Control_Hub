@@ -79,6 +79,8 @@ Pluginet benytter Stream Decks lokale WebSocket-API og Node 24-runtime. Det har 
 
 Statusknappen opdateres normalt hvert tredje sekund. En langsom forespørgsel afsluttes før næste opdatering. Grøn bekræftelse gives kun ved et gyldigt, korreleret succes-svar. Ved fejl vises en advarsel og opfordring til at kontrollere status. Ingen automatisk gentagelse af kommandoer.
 
+Indstillingspanelets **Test forbindelse** læser status uden at udføre produktionshandlinger. Forkert token, optaget host, utilgængelig host og manglende programforbindelser vises med hver sin forklaring. Forsinkede kommandosvar må ikke opdatere en knap, hvis dens indstillinger eller profil er skiftet i mellemtiden. Elgatos officielle validator kontrollerer manifest og aktiver i CI.
+
 ## Fejl, sikkerhed og databeskyttelse
 
 En timeout kan indtræffe efter, at et program har modtaget kommandoen. Derfor betyder `outcome_unknown` ikke, at handlingen aldrig skete. Operatøren skal kontrollere status. COM kan ikke tvangsafbrydes sikkert; et langsomt kald kan afsluttes efter klientens timeout.

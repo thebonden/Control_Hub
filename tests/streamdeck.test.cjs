@@ -86,3 +86,111 @@ test("hidden status keys stop polling", async () => {
   await bridge.poll();
   assert.equal(calls,1);
 });
+
+const { connectionReport } = require(path.join(pluginDir, "diagnostics.js"));
+const statusFixture = () => ({ protocolVersion:"1",version:"0.0.001",plugins:[
+  {id:"powerpoint",state:"ready"},{id:"obs",state:"ready"}] });
+const checkMessage = (extra = {}) => ({event:"sendToPlugin",context:"key",action:prefix+"next",
+  payload:{kind:"checkConnection",requestId:"check-1",token,...extra}});
+test("main plugin icons are PNGs at both required resolutions", () => {
+  for(const [name,size] of [["plugin",28],["plugin@2x",56]]) {
+    const png=fs.readFileSync(path.join(pluginDir,"assets",name+".png"));
+    assert.equal(png.subarray(0,8).toString("hex"),"89504e470d0a1a0a");
+    assert.equal(png.readUInt32BE(16),size);
+    assert.equal(png.readUInt32BE(20),size);
+  }
+});
+test("connection check only reads status and does not persist or echo a token", async () => {
+  const sent=[],calls=[];
+  const bridge=createBridge(m=>sent.push(m),async(url,options)=>{
+    calls.push({url,options});return {ok:true,json:async()=>statusFixture()};
+  });
+  await bridge.handle(appear("next"));
+  await bridge.handle(checkMessage());
+  assert.equal(calls.length,1);
+  assert.ok(calls[0].url.endsWith("/status"));
+  assert.equal(calls[0].options.method,"GET");
+  assert.equal(calls[0].options.body,undefined);
+  assert.deepEqual(sent.map(m=>m.event),["sendToPropertyInspector"]);
+  assert.equal(sent[0].payload.code,"ready");
+  assert.equal(sent[0].payload.requestId,"check-1");
+  assert.ok(!JSON.stringify(sent).includes(token));
+});
+test("connection check distinguishes wrong token and busy host", async () => {
+  for(const [status,code] of [[401,"unauthorized"],[429,"busy"]]) {
+    const sent=[];
+    const bridge=createBridge(m=>sent.push(m),async()=>({ok:false,status,json:async()=>{throw new Error("must not read error body");}}));
+    await bridge.handle(appear("next"));
+    await bridge.handle(checkMessage());
+    assert.equal(sent[0].payload.code,code);
+  }
+});
+test("connection check rejects missing token before networking", async () => {
+  const sent=[];let calls=0;
+  const bridge=createBridge(m=>sent.push(m),async()=>{calls++;});
+  await bridge.handle(appear("next"));
+  await bridge.handle(checkMessage({token:""}));
+  assert.equal(calls,0);
+  assert.equal(sent[0].payload.code,"invalid_token");
+});
+test("connection check sanitizes transport exceptions", async () => {
+  const sent=[];
+  const bridge=createBridge(m=>sent.push(m),async()=>{throw new Error(token);});
+  await bridge.handle(appear("next"));
+  await bridge.handle(checkMessage());
+  assert.equal(sent[0].payload.code,"unreachable");
+  assert.ok(!JSON.stringify(sent).includes(token));
+});
+test("connection report distinguishes unavailable programs from a stopped host", () => {
+  const status=statusFixture();status.plugins[1].state="unavailable";
+  const report=connectionReport(status);
+  assert.equal(report.code,"partial");
+  assert.equal(report.checks[0].state,"ready");
+  assert.equal(report.checks[1].state,"unavailable");
+  assert.ok(report.message.da && report.message.en);
+});
+test("malformed or duplicate status cannot claim connectivity", () => {
+  assert.equal(connectionReport({}).code,"invalid_response");
+  const status=statusFixture();status.plugins.push(status.plugins[0]);
+  assert.equal(connectionReport(status).code,"invalid_response");
+  assert.equal(connectionReport({...statusFixture(),protocolVersion:"2"}).code,"invalid_response");
+});
+test("unexpected inspector messages do not perform requests", async () => {
+  let calls=0;
+  const bridge=createBridge(()=>{},async()=>{calls++;});
+  await bridge.handle(appear("next"));
+  await bridge.handle({...checkMessage(),action:prefix+"streamstart"});
+  await bridge.handle(checkMessage({kind:"execute",action:"stream.start"}));
+  assert.equal(calls,0);
+});
+test("late success cannot update a newly configured key", async () => {
+  const sent=[];let release;
+  const bridge=createBridge(m=>sent.push(m),async(url,options)=>new Promise(resolve=>{
+    release=()=>resolve({ok:true,json:async()=>({protocolVersion:"1",id:JSON.parse(options.body).id,success:true})});
+  }));
+  await bridge.handle(appear("next"));
+  const first=bridge.handle({event:"keyDown",context:"key"});
+  await bridge.handle({...appear("scene",{sceneName:"Other"}),event:"didReceiveSettings"});
+  release();await first;
+  assert.equal(sent.length,0);
+});
+test("late failure cannot update a reused key context", async () => {
+  const sent=[];let release;
+  const bridge=createBridge(m=>sent.push(m),()=>new Promise(resolve=>{release=resolve;}));
+  await bridge.handle(appear("next"));
+  const first=bridge.handle({event:"keyDown",context:"key"});
+  await bridge.handle({event:"willDisappear",context:"key"});
+  await bridge.handle(appear("recordstart"));
+  release({ok:false});await first;
+  assert.equal(sent.length,0);
+});
+test("overlapping connection checks issue one request", async () => {
+  let calls=0,release;const sent=[];
+  const bridge=createBridge(m=>sent.push(m),()=>{calls++;return new Promise(resolve=>{release=resolve;});});
+  await bridge.handle(appear("next"));
+  const first=bridge.handle(checkMessage());
+  await bridge.handle(checkMessage({requestId:"check-2"}));
+  release({ok:true,json:async()=>statusFixture()});await first;
+  assert.equal(calls,1);
+  assert.equal(sent[0].payload.requestId,"check-1");
+});

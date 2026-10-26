@@ -19,7 +19,7 @@ From the repository root:
 dotnet restore ControlHub.slnx
 dotnet build ControlHub.slnx -c Release --no-restore
 dotnet test ControlHub.slnx -c Release --no-build
-node --test tests/streamdeck.test.cjs
+node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
 node scripts/check-policy.cjs
 ```
 
@@ -48,7 +48,8 @@ The API address is fixed at `http://127.0.0.1:5187`. Privately copy the host tok
 3. Restart Stream Deck. The **Control Hub** category should appear.
 4. Drag **Næste slide / Next slide**, **Forrige slide / Previous slide**, **Skift scene / Switch scene** and **Status / Status** onto your profile.
 5. Choose Dansk or English, enter the local token and any required arguments, and click Gem/Save for every key.
-6. Enter exact OBS scene and input names. Go-to requires a positive slide number. Mute specifies a desired state rather than blindly toggling.
+6. Click **Test connection**. It uses the entered token without saving it and only reads status. It does not change slides, scenes, recording or streaming. It reports Control Hub, PowerPoint and OBS separately. Click **Save** to retain the token once configured.
+7. Enter exact OBS scene and input names. Go-to requires a positive slide number. Mute specifies a desired state rather than blindly toggling.
 
 This is a manual development installation from source. No Marketplace package, installer, release or tag has been published.
 

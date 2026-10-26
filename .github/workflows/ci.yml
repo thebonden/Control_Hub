@@ -25,6 +25,7 @@ jobs:
       - run: dotnet restore ControlHub.slnx
       - run: dotnet build ControlHub.slnx --no-restore --configuration Release
       - run: dotnet test ControlHub.slnx --no-build --configuration Release --logger trx
-      - run: node --test tests/streamdeck.test.cjs
+      - run: node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
+      - run: npx --yes --package=@elgato/cli@1.10.3 streamdeck validate --no-update-check Plugins/StreamDeck/dk.thebonden.controlhub.sdPlugin
       - run: node tests/host-smoke.cjs
       - run: node scripts/check-policy.cjs

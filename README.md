@@ -39,7 +39,7 @@ Krav: .NET 10 SDK; til den prioriterede kæde Windows, PowerPoint desktop, OBS m
 dotnet restore ControlHub.slnx
 dotnet build ControlHub.slnx --configuration Release --no-restore
 dotnet test ControlHub.slnx --configuration Release --no-build
-node --test tests/streamdeck.test.cjs
+node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
 ```
 
 Opret et tilfældigt lokalt token og start værten som vist i [installationsvejledningen](docs/setup.da.md). Åbn selv præsentationen og start slideshowet. Aktivér OBS WebSocket og angiv adgangskoden lokalt. Installér derefter Stream Deck-pluginet og konfigurér knapperne.
