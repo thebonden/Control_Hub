@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><title>Control Hub</title>
+<style>body{font:13px system-ui;background:#282828;color:#eee;padding:12px}label{display:block;margin:12px 0 4px}input,select,button{box-sizing:border-box;width:100%;padding:7px;background:#424242;color:white;border:1px solid #777}p{line-height:1.5}.hint{color:#ccc}</style></head>
+<body><label>Sprog / Language</label><select id="language"><option value="da">Dansk</option><option value="en">English</option></select>
+<label id="tokenLabel" for="token"></label><input id="token" type="password" autocomplete="off">
+<div id="slideField"><label id="slideLabel" for="slide"></label><input id="slide" type="number" min="1" step="1"></div>
+<div id="sceneField"><label id="sceneLabel" for="sceneName"></label><input id="sceneName"></div>
+<div id="inputField"><label id="inputLabel" for="inputName"></label><input id="inputName">
+<label id="muteLabel" for="muted"></label><select id="muted"><option value="true">Lyd fra / Mute</option><option value="false">Lyd til / Unmute</option></select></div>
+<p id="hint" class="hint"></p><button id="save"></button><p id="saved"></p>
+<script src="inspector.js"></script></body></html>

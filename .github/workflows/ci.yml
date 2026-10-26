@@ -1,0 +1,30 @@
+name: Build and tests / Byg og test
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: dotnet restore ControlHub.slnx
+      - run: dotnet build ControlHub.slnx --no-restore --configuration Release
+      - run: dotnet test ControlHub.slnx --no-build --configuration Release --logger trx
+      - run: node --test tests/streamdeck.test.cjs
+      - run: node tests/host-smoke.cjs
+      - run: node scripts/check-policy.cjs
