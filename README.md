@@ -12,6 +12,7 @@ Formålet er at give operatøren tydelige knapper, forudsigelige kommandoer og �
 
 - [Dybdegående projektbeskrivelse](docs/project.da.md) · [English](docs/project.en.md)
 - [Installation og betjening](docs/setup.da.md) · [English](docs/setup.en.md)
+- [Windows-installationspakke: trin for trin](docs/installation.da.html) · [English](docs/installation.en.html)
 - [Kommando- og statusprotokol](docs/protocol.da.md) · [English](docs/protocol.en.md)
 - [Testplan og acceptkriterier](docs/testing.da.md) · [English](docs/testing.en.md)
 - [Versionsregler / Version policy](docs/versioning.md)
@@ -22,10 +23,11 @@ Formålet er at give operatøren tydelige knapper, forudsigelige kommandoer og �
 
 | Område | Implementeret i 0.0.001 | Begrænsning |
 |---|---|---|
-| C#/.NET 10 | Lokal HTTP-host, validering, pluginregistrering, status, timeouts og begrænset dubletbeskyttelse | Ingen desktop-GUI, serviceinstallation eller vedvarende kø |
+| C#/.NET 10 | Lokal HTTP-host, validering, pluginregistrering, status, timeouts og begrænset dubletbeskyttelse | Ingen serviceinstallation eller vedvarende kø |
+| Windows-installation | Installer med .NET inkluderet; dansk/engelsk kontrolvindue, start/stop, status og krypterede indstillinger | Windows x64; usigneret udviklingspakke; ingen automatisk opdatering |
 | PowerPoint COM | Næste, forrige, gå til slide, sort skærm, genoptag og status via en STA-tråd | Windows; præcis ét eksisterende slideshow; endnu ikke livegodkendt |
 | OBS WebSocket v5 | Godkendelse, scenevalg, start/stop optagelse og udsendelse, eksplicit lyd fra/til, status | Kun lokal OBS; ny forbindelse pr. forespørgsel; endnu ikke livegodkendt |
-| Stream Deck | 12 handlinger, danske/engelske indstillinger, resultatfeedback og statusknap | Kildeplugin til manuel udviklingsinstallation; endnu ikke hardwaregodkendt |
+| Stream Deck | 12 handlinger, danske/engelske indstillinger, resultatfeedback, statusknap og installationspakke | Indlæsning verificeret lokalt; samlet hardwareaccept afventer |
 | AndroidRemote | Plugin-id, statuspladsholder og integrationsplan | Ingen Android-app eller parring endnu |
 | Lyd, Logitech, Android Live, fysisk fjernkontrol, Flux Keyboard | Mapper, integrationsplaner og statuspladsholdere | Ingen fungerende enhedsdrivere endnu |
 
@@ -33,7 +35,9 @@ OBS-lydstyring gælder navngivne OBS-lydkilder. Det separate lydplugin til opera
 
 ## Hurtig start
 
-Krav: .NET 10 SDK; til den prioriterede kæde Windows, PowerPoint desktop, OBS med WebSocket v5 og Stream Deck 7.4+.
+Brug Windows-installationspakken for start uden terminal eller separat .NET-installation. Pakker fra GitHub Actions er udviklingsartefakter, ikke releases. Følg [installationsvejledningen](docs/installation.da.html).
+
+Ved build fra kildekode kræves .NET 10 SDK; til den prioriterede kæde Windows, PowerPoint desktop, OBS med WebSocket v5 og Stream Deck 7.4+.
 
 ```powershell
 dotnet restore ControlHub.slnx

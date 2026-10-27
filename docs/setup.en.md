@@ -4,6 +4,8 @@
 
 ## Prerequisites
 
+For the prebuilt Windows x64 package, follow the [installation guide](installation.en.html). It includes .NET and a control window; the SDK and Node are only needed for development and tests. Installation files are development artifacts, not a release.
+
 - Windows 10/11 for PowerPoint COM; .NET 10 SDK for building.
 - Installed desktop PowerPoint. Browser-based PowerPoint is not supported.
 - OBS Studio with WebSocket v5 enabled. OBS and Control Hub run on the same machine.
@@ -51,7 +53,18 @@ The API address is fixed at `http://127.0.0.1:5187`. Privately copy the host tok
 6. Click **Test connection**. It uses the entered token without saving it and only reads status. It does not change slides, scenes, recording or streaming. It reports Control Hub, PowerPoint and OBS separately. Click **Save** to retain the token once configured.
 7. Enter exact OBS scene and input names. Go-to requires a positive slide number. Mute specifies a desired state rather than blindly toggling.
 
-This is a manual development installation from source. No Marketplace package, installer, release or tag has been published.
+The above is the manual development installation from source. Alternatively, double-click the built `.streamDeckPlugin` file. The Windows installer includes this package and the control window. No Marketplace publication, release or tag has been created.
+
+## Build installation files (Windows)
+
+Install Inno Setup 6.7.3, .NET 10 SDK and Node 24 with npm. Run:
+
+```powershell
+./scripts/package-windows.ps1 -IsccPath 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' -OutputDirectory "$PWD\artifacts\windows"
+./scripts/verify-package.ps1 -PackageDirectory "$PWD\artifacts\windows"
+```
+
+The output directory must be new to avoid stale files. `files/` contains Windows setup, the Stream Deck package and SHA-256 checksums. `payload/` contains the packaged applications. Verification tests encrypted settings, invalid addresses, the packaged host, occupied ports and shutdown; it sends no slideshow or OBS actions. GitHub Actions builds and stores the Windows package as a temporary artifact after tests. No release/tag is created.
 
 ## Prepare PowerPoint and OBS
 

@@ -4,6 +4,8 @@
 
 ## Forudsætninger
 
+For den færdigbyggede Windows x64-pakke: følg [installationsvejledningen](installation.da.html). Den inkluderer .NET og et kontrolvindue; SDK og Node er kun nødvendige for udvikling og tests. Installationsfilerne er udviklingsartefakter, ikke en release.
+
 - Windows 10/11 til PowerPoint COM; .NET 10 SDK til build.
 - PowerPoint desktop installeret. PowerPoint i browseren understøttes ikke.
 - OBS Studio med WebSocket v5 aktiveret. OBS og Control Hub kører på samme maskine.
@@ -51,7 +53,18 @@ API-adressen er fast `http://127.0.0.1:5187`. Hostens token skal kopieres privat
 6. Tryk **Test forbindelse**. Testen bruger tokenet i feltet uden at gemme det og læser kun status. Den skifter ikke slide, scene, optagelse eller udsendelse. Den viser separat, om Control Hub, PowerPoint og OBS svarer. Gem tokenet med **Gem**, når opsætningen er korrekt.
 7. OBS-scener og lydkilder skal angives med deres præcise navne. Gå til slide kræver et positivt heltal. Lyd fra/til angiver ønsket tilstand; det er ikke en blind toggle.
 
-Dette er en manuel udviklingsinstallation fra kildekode. Der er ikke udgivet en Marketplace-pakke, installer, release eller tag.
+Ovenstående er den manuelle udviklingsinstallation fra kildekode. Alternativt installeres den byggede `.streamDeckPlugin`-fil med dobbeltklik. Windows-installeren indeholder både denne pakke og kontrolvinduet. Ingen Marketplace-udgivelse, release eller tag er oprettet.
+
+## Byg installationsfiler (Windows)
+
+Installér Inno Setup 6.7.3, .NET 10 SDK og Node 24 med npm. Kør:
+
+```powershell
+./scripts/package-windows.ps1 -IsccPath 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' -OutputDirectory "$PWD\artifacts\windows"
+./scripts/verify-package.ps1 -PackageDirectory "$PWD\artifacts\windows"
+```
+
+Outputmappen skal være ny for at undgå gamle filer. `files/` indeholder Windows-setup, Stream Deck-pakke og SHA-256-kontrolsummer. `payload/` indeholder de pakkede programmer. Verifikation afprøver krypterede indstillinger, ugyldige adresser, den pakkede host, optaget port og stop; den sender ingen slideshow- eller OBS-handlinger. GitHub Actions bygger og gemmer Windows-pakken som en midlertidig artefakt efter tests. Der oprettes ingen release/tag.
 
 ## Klargør PowerPoint og OBS
 

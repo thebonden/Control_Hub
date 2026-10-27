@@ -22,10 +22,11 @@ The goal is to give operators clear buttons, predictable commands and truthful s
 
 | Area | Implemented in 0.0.001 | Limitation |
 |---|---|---|
-| C#/.NET 10 | Local HTTP host, validation, plugin registration, status, timeouts and bounded deduplication | No desktop GUI, service installer or persistent queue |
+| C#/.NET 10 | Local HTTP host, validation, plugin registration, status, timeouts and bounded deduplication | No service installer or persistent queue |
+| Windows installation | Installer including .NET; Danish/English control window, start/stop, status and encrypted settings | Windows x64; unsigned development package; no automatic updates |
 | PowerPoint COM | Next, previous, go to slide, black screen, resume and status on an STA thread | Windows; exactly one existing slideshow; live acceptance pending |
 | OBS WebSocket v5 | Authentication, scene selection, start/stop recording and streaming, explicit mute state, status | Local OBS only; new connection per request; live acceptance pending |
-| Stream Deck | 12 actions, Danish/English settings, result feedback and status key | Source plugin for manual development installation; hardware acceptance pending |
+| Stream Deck | 12 actions, Danish/English settings, result feedback, status key and installation package | Loading verified locally; complete hardware acceptance pending |
 | AndroidRemote | Plugin ID, status placeholder and integration plan | No Android app or pairing yet |
 | Audio, Logitech, Android Live, physical remote, Flux Keyboard | Directories, integration plans and status placeholders | No working device drivers yet |
 
@@ -33,7 +34,9 @@ OBS audio control applies to named OBS inputs. The separate operating-system aud
 
 ## Quick start
 
-Requirements: .NET 10 SDK; for the priority chain, Windows, desktop PowerPoint, OBS with WebSocket v5, and Stream Deck 7.4+.
+Use the Windows installer to start without a terminal or a separate .NET installation. GitHub Actions packages are development artifacts, not releases. Follow the [installation guide](docs/installation.en.html).
+
+Building from source requires .NET 10 SDK; for the priority chain, Windows, desktop PowerPoint, OBS with WebSocket v5, and Stream Deck 7.4+.
 
 ```powershell
 dotnet restore ControlHub.slnx

@@ -4,6 +4,8 @@
 
 ## Automatiske kontroller
 
+- Windows-pakketest: inkluderet runtime, DPAPI-konfiguration, ødelagt konfiguration, lokal adressevalidering, start af den pakkede host, autentificeret status, optaget port og stop via lukket inputforbindelse. Kør `scripts/verify-package.ps1` efter pakning; den afprøver ikke fysisk styring.
+
 - Release-build af alle C#-projekter med advarsler som fejl.
 - Routing, UUID, protokolversion, ukendte handlinger og ugyldige argumenter.
 - Parallelle dubletter udføres én gang inden for cachevinduet; konflikt-id'er afvises.

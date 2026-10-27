@@ -18,7 +18,7 @@ A typical workflow starts with the operator opening the presentation, starting t
 
 AndroidRemote and Android Live are separate integration tracks. Their names do not establish a particular third-party app, product API or hardware model. The same applies to Flux Keyboard, Logitech and the physical remote.
 
-A desktop control dashboard, user profiles, macros, combined scene/slide automation and Windows service installation are outside the first version. The version number is not a schedule or a percentage-complete metric.
+A small Danish/English Windows control window and per-user installer are included: start/stop, connection status, token copying and OBS settings. Settings are encrypted for the Windows user with DPAPI. The host stops when the control window's connection closes. A full visual production dashboard, user profiles, macros, combined scene/slide automation and Windows service installation remain outside the first version. The version number is not a schedule or a percentage-complete metric.
 
 ## Architecture
 

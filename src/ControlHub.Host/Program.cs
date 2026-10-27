@@ -44,6 +44,15 @@ var plugins = new IHubPlugin[]
 };
 var dispatcher = new CommandDispatcher(plugins);
 var app = builder.Build();
+// Desktop ejer hostens levetid. EOF efter normal lukning eller nedbrud stopper kun hosten.
+// Desktop owns host lifetime. EOF after normal close or a crash stops only the host.
+if (Environment.GetEnvironmentVariable("CONTROLHUB_DESKTOP_LIFETIME") == "stdin")
+    _ = Task.Run(async () =>
+    {
+        var input = new char[1];
+        while (await Console.In.ReadAsync(input.AsMemory()) != 0) { }
+        app.Lifetime.StopApplication();
+    });
 app.Use(async (context, next) =>
 {
     // Reject browser-originated requests; Stream Deck uses its Node runtime.

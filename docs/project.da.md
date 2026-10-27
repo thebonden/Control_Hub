@@ -18,7 +18,7 @@ Et typisk forløb er, at operatøren åbner præsentationen, starter slideshowet
 
 AndroidRemote og Android Live er separate integrationsspor. Der antages ikke en bestemt tredjepartsapp, et bestemt produkt-API eller en bestemt hardwaremodel ud fra navnet alene. Det samme gælder Flux Keyboard, Logitech og den fysiske fjernkontrol.
 
-En visuel desktopkontrolcentral, brugerprofiler, makroer, samlet scene-/slideautomatik og installation som Windows-service ligger uden for første version. Ingen tidsplan eller færdiggørelsesprocent udledes af versionsnummeret.
+Et enkelt dansk/engelsk Windows-kontrolvindue og en brugerinstallation er inkluderet: start/stop, forbindelsesstatus, kopiering af token og OBS-indstillinger. Indstillinger krypteres for Windows-brugeren med DPAPI. Hosten stopper, når kontrolvinduets forbindelse lukkes. Et fuldt visuelt afviklingspanel, brugerprofiler, makroer, samlet scene-/slideautomatik og installation som Windows-service ligger fortsat uden for første version. Ingen tidsplan eller færdiggørelsesprocent udledes af versionsnummeret.
 
 ## Arkitektur
 

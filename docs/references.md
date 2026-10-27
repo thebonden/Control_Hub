@@ -9,5 +9,9 @@ Disse officielle kilder ligger til grund for integrationsvalgene. / These offici
 - [Stream Deck WebSocket API](https://docs.elgato.com/streamdeck/sdk/references/websocket/plugin/)
 - [Stream Deck runtimes](https://docs.elgato.com/streamdeck/sdk/introduction/plugin-environment/)
 - [Stream Deck distribution / distribution](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/)
+- [Stream Deck installation packaging / installationspakning](https://docs.elgato.com/streamdeck/cli/commands/pack/)
+- [.NET self-contained deployment / inkluderet runtime](https://learn.microsoft.com/en-us/dotnet/core/deploying/)
+- [Windows DPAPI / krypteret konfiguration](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.protecteddata)
+- [Inno Setup per-user installation / brugerinstallation](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm)
 
 Henvisninger beskriver API'er; de er ikke bevis for lokal hardwaretest. / References describe APIs; they are not evidence of local hardware testing.

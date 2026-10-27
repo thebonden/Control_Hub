@@ -3,6 +3,9 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
+- Windows x64-installation med inkluderet .NET og officiel Stream Deck-installationspakke.
+- Dansk/engelsk kontrolvindue med start/stop, forbindelsesstatus, kopiering af vedvarende token og DPAPI-krypterede OBS-indstillinger.
+- Pakketest af konfiguration, lokal host og stop; Windows-artefakter i CI uden release/tag.
 - Forbindelsestest i Stream Deck-indstillingerne med separat status for Control Hub, PowerPoint og OBS.
 - Beskyttelse mod forsinket knapfeedback efter profil-/indstillingsskift.
 - Hovedikon i krævet PNG-format og officiel Elgato-validering i CI.
@@ -16,6 +19,9 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
+- Windows x64 installer with included .NET and an official Stream Deck installation package.
+- Danish/English control window with start/stop, connection status, persistent token copying and DPAPI-encrypted OBS settings.
+- Package checks for configuration, local host and shutdown; Windows CI artifacts without a release/tag.
 - Connection check in Stream Deck settings with separate Control Hub, PowerPoint and OBS status.
 - Protection against late key feedback after profile/settings changes.
 - Main icon in the required PNG format and official Elgato validation in CI.

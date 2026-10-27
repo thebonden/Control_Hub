@@ -4,6 +4,8 @@
 
 ## Automated checks
 
+- Windows package checks: included runtime, DPAPI configuration, corrupt configuration, local address validation, packaged host startup, authenticated status, occupied ports and shutdown through a closed input connection. Run `scripts/verify-package.ps1` after packaging; this does not test physical control.
+
 - Release build of all C# projects with warnings treated as errors.
 - Routing, UUIDs, protocol versions, unknown actions and invalid arguments.
 - Concurrent duplicate commands execute once within the cache window; conflicting IDs are rejected.
