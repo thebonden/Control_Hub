@@ -3,6 +3,7 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
+- Rettet forbindelsessvar, når Stream Decks indstillingsvindue og knap har forskellige id'er; dækket af en regressionstest.
 - Windows x64-installation med inkluderet .NET og officiel Stream Deck-installationspakke.
 - Dansk/engelsk kontrolvindue med start/stop, forbindelsesstatus, kopiering af vedvarende token og DPAPI-krypterede OBS-indstillinger.
 - Pakketest af konfiguration, lokal host og stop; Windows-artefakter i CI uden release/tag.
@@ -19,6 +20,7 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
+- Fixed connection replies when the Stream Deck inspector and key have different IDs; covered by a regression test.
 - Windows x64 installer with included .NET and an official Stream Deck installation package.
 - Danish/English control window with start/stop, connection status, persistent token copying and DPAPI-encrypted OBS settings.
 - Package checks for configuration, local host and shutdown; Windows CI artifacts without a release/tag.

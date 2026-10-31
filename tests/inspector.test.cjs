@@ -17,8 +17,8 @@ function inspector(language="da") {
   const context=vm.createContext({document:{getElementById:el,documentElement:{}},WebSocket:Socket,
     crypto:{randomUUID:()=>"request-1"},setTimeout:fn=>{timer=fn;return 1;},clearTimeout:()=>{timer=null;}});
   vm.runInContext(source,context);
-  context.connectElgatoStreamDeckSocket(1234,"key","registerPropertyInspector","{}",JSON.stringify({
-    action:"dk.thebonden.controlhub.next",payload:{settings:{language,token:"t".repeat(40)}}}));
+  context.connectElgatoStreamDeckSocket(1234,"inspector-session","registerPropertyInspector","{}",JSON.stringify({
+    context:"key",action:"dk.thebonden.controlhub.next",payload:{settings:{language,token:"t".repeat(40)}}}));
   socket.readyState=1;socket.onopen();
   return {el,sent,socket,timeout:()=>timer?.()};
 }
@@ -28,8 +28,31 @@ test("inspector connection check sends no command and does not save credentials"
   ui.el("check").onclick();
   assert.deepEqual(ui.sent.map(m=>m.event),["registerPropertyInspector","sendToPlugin"]);
   assert.equal(ui.sent[1].payload.kind,"checkConnection");
+  assert.equal(ui.sent[0].uuid,"inspector-session");
+  assert.equal(ui.sent[1].context,"inspector-session");
   assert.equal(ui.sent[1].payload.token,"new".repeat(20));
   assert.equal(ui.el("check").disabled,true);
+});
+test("distinct inspector registration and action contexts complete a real bridge round trip",async()=>{
+  const { createBridge }=require("../Plugins/StreamDeck/dk.thebonden.controlhub.sdPlugin/bridge.js");
+  const ui=inspector();
+  const bridge=createBridge(message=>ui.socket.onmessage({data:JSON.stringify(message)}),async()=>({ok:true,json:async()=>({
+    protocolVersion:"1",version:"0.0.001",plugins:[
+      {id:"powerpoint",state:"unavailable"},{id:"obs",state:"unavailable"}
+    ]
+  })}));
+  await bridge.handle({event:"willAppear",context:"key",action:"dk.thebonden.controlhub.next",payload:{settings:{}}});
+  ui.el("check").onclick();
+  const sent=ui.sent.at(-1);
+  assert.equal(sent.context,"inspector-session");
+  // Stream Deck validates the UI sender and forwards the action's key context.
+  await bridge.handle({...sent,context:"key"});
+  assert.equal(ui.el("check").disabled,false);
+  assert.match(ui.el("connection").textContent,/0\.0\.001/);
+  ui.el("save").onclick();
+  assert.equal(ui.sent.at(-1).event,"setSettings");
+  assert.equal(ui.sent.at(-1).action,"dk.thebonden.controlhub.next");
+  assert.equal(ui.sent.at(-1).context,"inspector-session");
 });
 test("inspector ignores mismatched results and shows matching bilingual result as text",()=>{
   const ui=inspector("en");ui.el("check").onclick();

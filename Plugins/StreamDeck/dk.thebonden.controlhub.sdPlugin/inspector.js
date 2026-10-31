@@ -1,5 +1,5 @@
 "use strict";
-let socket, context, currentSettings = {}, action, pendingCheck = null, checkTimer, lastReport = null;
+let socket, context, actionContext, currentSettings = {}, action, pendingCheck = null, checkTimer, lastReport = null;
 const el = id => document.getElementById(id);
 const translations = {
   da: { tokenLabel: "Control Hub-adgangstoken", slideLabel: "Slidenummer (fra 1)", sceneLabel: "Præcist scenenavn i OBS", inputLabel: "Præcist navn på lydkilde i OBS", muteLabel: "Ønsket lydtilstand",
@@ -48,7 +48,10 @@ function load(settings) {
 }
 function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionInfo) {
   const data = JSON.parse(actionInfo);
-  context = uuid; action = data.action;
+  // Send with the UI registration UUID; replies identify the key instance.
+  // Send med UI-registrerings-id; svar identificerer den konkrete knap.
+  context = uuid; actionContext = data.context; action = data.action;
+  if (typeof actionContext !== "string" || !actionContext) throw new Error("Missing action context / Knapkontekst mangler");
   load(data.payload?.settings ?? {});
   el("slideField").hidden = !action.endsWith(".goto");
   el("sceneField").hidden = !action.endsWith(".scene");
@@ -59,8 +62,9 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionIn
   socket.onmessage = event => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
-    if (message.event === "didReceiveSettings" && message.context === context) load(message.payload.settings);
-    if (message.event === "sendToPropertyInspector" && message.context === context &&
+    const forThisInspector = message.context === actionContext || message.context === context;
+    if (message.event === "didReceiveSettings" && forThisInspector) load(message.payload.settings);
+    if (message.event === "sendToPropertyInspector" && forThisInspector &&
         message.payload?.kind === "connectionResult" && pendingCheck && message.payload.requestId === pendingCheck) {
       clearCheck(); lastReport = message.payload; showReport();
     }
@@ -72,7 +76,7 @@ el("save").onclick = () => {
   if (!socket || socket.readyState !== WebSocket.OPEN || pendingCheck) return;
   const settings = { ...currentSettings, token: el("token").value, language: language(),
     slide: el("slide").value, sceneName: el("sceneName").value, inputName: el("inputName").value, muted: el("muted").value === "true" };
-  socket.send(JSON.stringify({ event: "setSettings", context, payload: settings }));
+  socket.send(JSON.stringify({ event: "setSettings", action, context, payload: settings }));
   el("saved").textContent = translations[settings.language].saved;
 };
 el("check").onclick = () => {

@@ -49,3 +49,11 @@ Use `Get-FileHash -Algorithm SHA256 -LiteralPath '<existing file>'` before and a
 Record date, Windows/Office/OBS/Stream Deck versions, hardware model, plugin commit, steps, expected and observed outcomes, file hashes and operator approval. Never share tokens, OBS passwords or streaming keys.
 
 0.0.001 may only be called hardware-verified after this procedure is completed and its evidence attached. 0.1.000 additionally requires owner approval of the full scope and evidence from the active environment.
+
+## Local integration status — 31 October 2026
+
+Stream Deck previously loaded all 12 actions. A configured status key received authenticated status from Control Hub while PowerPoint and OBS appeared unavailable. This verifies status connectivity, but not physical key presses or application control.
+
+Testing exposed different IDs for the inspector registration and its key. The connection check sent correctly but ignored the reply addressed to the key. The fix preserves the sender ID and accepts the reply for the associated key. A regression test covers the round trip through the plugin bridge with simulated Stream Deck routing. 25 JavaScript tests pass. The corrected dialog still requires a live Stream Deck check.
+
+When work resumed on 31 October, Stream Deck, OBS, Control Hub and PowerPoint were not open. Automatic launch through app control failed. No new practical PowerPoint/OBS test or completed hardware acceptance is therefore recorded. No presentation files were changed and no recording or streaming was started.

@@ -49,3 +49,11 @@ Beregn filhash med `Get-FileHash -Algorithm SHA256 -LiteralPath '<eksisterende f
 For hvert testforløb registreres dato, Windows/Office/OBS/Stream Deck-versioner, hardwaremodel, plugincommit, testtrin, forventet og faktisk resultat, filhash og operatørens godkendelse. Del ikke tokens, OBS-password eller streamingnøgler.
 
 0.0.001 kan først betegnes hardwareverificeret, når denne protokol er gennemført og resultaterne er vedlagt. 0.1.000 kræver derudover ejerens godkendelse af det fulde scope og dokumentation fra det aktive miljø.
+
+## Lokal integrationsstatus — 31. oktober 2026
+
+Stream Deck har tidligere indlæst alle 12 handlinger. En konfigureret statusknap modtog autentificeret status fra Control Hub, mens PowerPoint og OBS blev vist som utilgængelige. Dette bekræfter statusforbindelsen, men ikke fysisk knaptryk eller styring af programmerne.
+
+Afprøvningen afslørede, at indstillingsvinduets registrerings-id og knappens id er forskellige. Forbindelsestesten sendte korrekt, men ignorerede svaret til knappens id. Rettelsen bevarer afsender-id’et og accepterer svaret til den tilknyttede knap. En regressionstest dækker hele forløbet gennem pluginets bro med simuleret Stream Deck-routing. 25 JavaScript-tests består. Den rettede dialog skal stadig afprøves i Stream Deck.
+
+Ved genoptagelse den 31. oktober var Stream Deck, OBS, Control Hub og PowerPoint ikke åbne. Automatisk åbning via appstyringen fejlede. Der er derfor ikke registreret en ny praktisk PowerPoint-/OBS-test eller en gennemført hardwareaccept. Ingen præsentationsfiler er ændret, og ingen udsendelse eller optagelse er startet.
