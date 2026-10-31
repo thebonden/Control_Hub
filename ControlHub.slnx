@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ControlHub.Contracts/ControlHub.Contracts.csproj" />
+    <Project Path="src/ControlHub.Core/ControlHub.Core.csproj" />
+    <Project Path="src/ControlHub.Host/ControlHub.Host.csproj" />
+    <Project Path="src/ControlHub.Desktop/ControlHub.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/Plugins/">
+    <Project Path="Plugins/PowerPoint/ControlHub.Plugins.PowerPoint.csproj" />
+    <Project Path="Plugins/Obs/ControlHub.Plugins.Obs.csproj" />
+    <Project Path="Plugins/Planned/ControlHub.Plugins.Planned.csproj" />
+  </Folder>
+  <Folder Name="/tests/"><Project Path="tests/ControlHub.Tests/ControlHub.Tests.csproj" /></Folder>
+</Solution>

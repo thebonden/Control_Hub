@@ -1,0 +1,45 @@
+name: Build and tests / Byg og test
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: dotnet restore ControlHub.slnx
+      - run: dotnet build ControlHub.slnx --no-restore --configuration Release
+      - run: dotnet test ControlHub.slnx --no-build --configuration Release --logger trx
+      - run: node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
+      - run: npx --yes --package=@elgato/cli@1.10.3 streamdeck validate --no-update-check Plugins/StreamDeck/dk.thebonden.controlhub.sdPlugin
+      - run: node tests/host-smoke.cjs
+      - run: node scripts/check-policy.cjs
+      - name: Build Windows installers / Byg Windows-installation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          ./scripts/package-windows.ps1 -IsccPath $iscc -OutputDirectory "$env:GITHUB_WORKSPACE\artifacts\windows"
+          ./scripts/verify-package.ps1 -PackageDirectory "$env:GITHUB_WORKSPACE\artifacts\windows"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: ControlHub-0.0.001-windows-development
+          path: artifacts/windows/files/*
+          retention-days: 14
+          if-no-files-found: error
