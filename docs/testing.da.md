@@ -50,10 +50,12 @@ For hvert testforløb registreres dato, Windows/Office/OBS/Stream Deck-versioner
 
 0.0.001 kan først betegnes hardwareverificeret, når denne protokol er gennemført og resultaterne er vedlagt. 0.1.000 kræver derudover ejerens godkendelse af det fulde scope og dokumentation fra det aktive miljø.
 
-## Lokal integrationsstatus — 31. oktober 2026
+## Lokal integrationsstatus — opdateret 1. november 2026
 
-Stream Deck har tidligere indlæst alle 12 handlinger. En konfigureret statusknap modtog autentificeret status fra Control Hub, mens PowerPoint og OBS blev vist som utilgængelige. Dette bekræfter statusforbindelsen, men ikke fysisk knaptryk eller styring af programmerne.
+Den 31. oktober blev den rettede forbindelsesdialog afprøvet i det installerede Stream Deck-plugin: Control Hub, PowerPoint og OBS svarede. Statusknappen viste slide 1 og stoppet optagelse/udsendelse.
 
-Afprøvningen afslørede, at indstillingsvinduets registrerings-id og knappens id er forskellige. Forbindelsestesten sendte korrekt, men ignorerede svaret til knappens id. Rettelsen bevarer afsender-id’et og accepterer svaret til den tilknyttede knap. En regressionstest dækker hele forløbet gennem pluginets bro med simuleret Stream Deck-routing. 25 JavaScript-tests består. Den rettede dialog skal stadig afprøves i Stream Deck.
+En praktisk prøve sendte simulerede knaptryk gennem pluginets produktionskode til den åbne lokale Control Hub 0.0.001-testudgave, PowerPoint COM og OBS 33.0.1. Næste/forrige, gå til slide, ugyldig slide, sort skærm/genoptag og OBS-scenevalg bestod. Slide 1 og den oprindelige scene blev gendannet. Præsentationsfilens SHA-256 var uændret. Ingen optagelse eller udsendelse blev startet. Prøven brugte det allerede åbne kontrolvindue fra package-001-b; installationstestene af den nye pakke er separate.
 
-Ved genoptagelse den 31. oktober var Stream Deck, OBS, Control Hub og PowerPoint ikke åbne. Automatisk åbning via appstyringen fejlede. Der er derfor ikke registreret en ny praktisk PowerPoint-/OBS-test eller en gennemført hardwareaccept. Ingen præsentationsfiler er ændret, og ingen udsendelse eller optagelse er startet.
+Ejeren bekræftede derefter, at den fysiske Næste-knap på Stream Deck XL skifter slide. Den efterfølgende COM-aflæsning fandt ikke præcis ét aktivt slideshow, så det konkrete slidenummer er ikke uafhængigt verificeret. Profile 2 har Status, Næste, Forrige, OBS SORT og OBS PPT. Fysiske tryk på de øvrige knapper samt optagelse, udsendelse, mute, animationer og fuld hardwareaccept er endnu ikke bekræftet.
+
+Den 1. november består 51 C#-tests og 27 JavaScript-tests efter tilføjelse af konkrete forbindelsesårsager. Tests dækker manglende og afvist OBS-adgangskode, lukket port, ugyldigt håndtryk, afbrydelse efter afsendelse, PowerPoint-fejlårsager og sikker tosproget statusvisning. Den simulerede OBS-server bruges til fejlprøver; brugerens serverindstillinger ændres ikke af testene.

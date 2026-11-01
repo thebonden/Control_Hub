@@ -194,3 +194,31 @@ test("overlapping connection checks issue one request", async () => {
   assert.equal(calls,1);
   assert.equal(sent[0].payload.requestId,"check-1");
 });
+
+
+test("connection diagnostics explain known causes in both languages without echoing server text", () => {
+  const { connectionReport } = require(path.join(pluginDir, "diagnostics.js"));
+  const report = connectionReport({protocolVersion:"1",version:"0.0.001",plugins:[
+    {id:"powerpoint",state:"unavailable",data:{reason:"no_slideshow"},message:{da:"secret",en:"secret"}},
+    {id:"obs",state:"unavailable",data:{reason:"authentication_failed"},message:{da:"secret",en:"secret"}}
+  ]});
+  assert.equal(report.code,"partial");
+  assert.match(report.checks[0].message.da,/intet slideshow/);
+  assert.match(report.checks[0].message.en,/no slideshow/);
+  assert.match(report.checks[1].message.da,/afviste adgangskoden/);
+  assert.match(report.checks[1].message.en,/rejected the password/);
+  assert.ok(!JSON.stringify(report).includes("secret"));
+});
+
+test("unknown diagnostic causes fall back safely and cannot override ready status", () => {
+  const { connectionReport } = require(path.join(pluginDir, "diagnostics.js"));
+  for (const reason of ["constructor","__proto__",{da:"secret"}]) {
+    const report=connectionReport({protocolVersion:"1",version:"0.0.001",plugins:[
+      {id:"powerpoint",state:"ready",data:{reason:"no_slideshow"}},
+      {id:"obs",state:"unavailable",data:{reason},message:{da:"secret",en:"secret"}}
+    ]});
+    assert.match(report.checks[0].message.en,/slideshow connected/);
+    assert.match(report.checks[1].message.en,/check the WebSocket/);
+    assert.ok(!JSON.stringify(report).includes("secret"));
+  }
+});

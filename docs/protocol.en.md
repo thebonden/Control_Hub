@@ -76,3 +76,14 @@ Status contains `protocolVersion`, `version`, `observedAt` and `plugins`. Each p
 - States: `ready`, `unavailable`, `unsupported`, `not_implemented`.
 
 Each plugin status lookup has a 10-second budget. Status is collected sequentially and observedAt marks the end of collection; it is not an atomic snapshot. Missing or unavailable status must never be interpreted as recording or streaming being stopped.
+
+## Specific connection failures
+
+Known failures include `data.reason` in status and command results. These optional fields do not change protocol version 1. Clients must use a general fallback for unknown reasons.
+
+| Plugin | Reasons |
+|---|---|
+| PowerPoint | `powerpoint_not_found`, `no_slideshow`, `multiple_slideshows`, `powerpoint_unavailable` |
+| OBS | `connection_unavailable`, `password_missing`, `authentication_failed`, `protocol_error`, `connection_lost`, `request_rejected` |
+
+An OBS disconnect or invalid reply after starting request transmission produces `outcome_unknown`; an explicit OBS rejection produces `obs_rejected`. No automatic retry. Status remains `unavailable` when a cause is known; it must not imply recording/streaming is stopped. Fixed Danish/English messages never include raw server errors, passwords or OBS error comments. WebSocket close code 4009 identifies authentication failure according to the official OBS protocol.

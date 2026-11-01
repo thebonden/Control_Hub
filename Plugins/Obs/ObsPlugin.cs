@@ -35,20 +35,31 @@ public sealed class ObsPlugin(IObsClient client) : IHubPlugin
             await client.RequestAsync(request, data, cancellationToken);
             return Wire.Result(command, true, "ok", "OBS bekræftede handlingen.", "OBS acknowledged the action.");
         }
-        catch (ObsRequestException)
+        catch (ObsRequestException error)
         {
-            return Wire.Result(command, false, "obs_rejected", "OBS-forbindelse eller handling afvist. Kontrollér status.",
-                "OBS connection or request rejected. Check status.");
+            var message = error.OutcomeUnknown
+                ? new LocalizedText("OBS-handlingens udfald er ukendt. Kontrollér status før en ny handling.",
+                    "The OBS action's outcome is unknown. Check status before another action.")
+                : ObsFailureInfo.Message(error.Reason);
+            return Wire.Result(command, false, error.OutcomeUnknown ? "outcome_unknown" : "obs_rejected", message.Da, message.En,
+                new { reason = ObsFailureInfo.Code(error.Reason) });
         }
     }
     private static CommandResult Invalid(Command command) => Wire.Result(command, false, "invalid_arguments", "Ugyldige OBS-argumenter.", "Invalid OBS arguments.");
 
     public async ValueTask<PluginStatus> GetStatusAsync(CancellationToken cancellationToken)
     {
-        var scene = await client.RequestAsync("GetCurrentProgramScene", new { }, cancellationToken);
-        var recording = await client.RequestAsync("GetRecordStatus", new { }, cancellationToken);
-        var streaming = await client.RequestAsync("GetStreamStatus", new { }, cancellationToken);
-        return new("obs", "ready", new("OBS tilsluttet.", "OBS connected."), Wire.Data(new { scene, recording, streaming }));
+        try
+        {
+            var scene = await client.RequestAsync("GetCurrentProgramScene", new { }, cancellationToken);
+            var recording = await client.RequestAsync("GetRecordStatus", new { }, cancellationToken);
+            var streaming = await client.RequestAsync("GetStreamStatus", new { }, cancellationToken);
+            return new("obs", "ready", new("OBS tilsluttet.", "OBS connected."), Wire.Data(new { scene, recording, streaming }));
+        }
+        catch (ObsRequestException error)
+        {
+            return new("obs", "unavailable", ObsFailureInfo.Message(error.Reason), Wire.Data(new { reason = ObsFailureInfo.Code(error.Reason) }));
+        }
     }
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

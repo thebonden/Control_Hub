@@ -50,10 +50,12 @@ Record date, Windows/Office/OBS/Stream Deck versions, hardware model, plugin com
 
 0.0.001 may only be called hardware-verified after this procedure is completed and its evidence attached. 0.1.000 additionally requires owner approval of the full scope and evidence from the active environment.
 
-## Local integration status — 31 October 2026
+## Local integration status — updated 1 November 2026
 
-Stream Deck previously loaded all 12 actions. A configured status key received authenticated status from Control Hub while PowerPoint and OBS appeared unavailable. This verifies status connectivity, but not physical key presses or application control.
+On 31 October the corrected connection dialog was exercised in the installed Stream Deck plugin: Control Hub, PowerPoint and OBS responded. The status key showed slide 1 with recording/streaming off.
 
-Testing exposed different IDs for the inspector registration and its key. The connection check sent correctly but ignored the reply addressed to the key. The fix preserves the sender ID and accepts the reply for the associated key. A regression test covers the round trip through the plugin bridge with simulated Stream Deck routing. 25 JavaScript tests pass. The corrected dialog still requires a live Stream Deck check.
+A live check sent simulated key events through the production plugin bridge to the open local Control Hub 0.0.001 test build, PowerPoint COM and OBS 33.0.1. Next/previous, go to slide, invalid-slide rejection, black screen/resume and OBS scene selection passed. Slide 1 and the original scene were restored. The presentation SHA-256 was unchanged. No recording or streaming was started. The check used the already open control window from package-001-b; installation checks of the new package are separate.
 
-When work resumed on 31 October, Stream Deck, OBS, Control Hub and PowerPoint were not open. Automatic launch through app control failed. No new practical PowerPoint/OBS test or completed hardware acceptance is therefore recorded. No presentation files were changed and no recording or streaming was started.
+The owner subsequently confirmed that the physical Next key on Stream Deck XL changes slides. The follow-up COM read did not find exactly one active slideshow, so the resulting slide number was not independently verified. Profile 2 has Status, Next, Previous, OBS SORT and OBS PPT. Physical presses on the other keys, recording, streaming, mute, animations and full hardware acceptance remain unconfirmed.
+
+On 1 November, 51 C# tests and 27 JavaScript tests pass after adding specific connection reasons. Tests cover missing/rejected OBS passwords, a closed port, malformed handshake, disconnect after dispatch, PowerPoint failure reasons and safe bilingual status messages. Fault tests use a simulated OBS server; they do not change the user's server settings.

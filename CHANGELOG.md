@@ -3,6 +3,8 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
+- Konkrete forbindelsesårsager for PowerPoint og OBS i status og Stream Deck, med sikre dansk/engelske tekster.
+- Afbrudte OBS-kommandoer efter påbegyndt afsendelse rapporteres som ukendt udfald; aldrig automatisk genafsendelse.
 - Rettet forbindelsessvar, når Stream Decks indstillingsvindue og knap har forskellige id'er; dækket af en regressionstest.
 - Windows x64-installation med inkluderet .NET og officiel Stream Deck-installationspakke.
 - Dansk/engelsk kontrolvindue med start/stop, forbindelsesstatus, kopiering af vedvarende token og DPAPI-krypterede OBS-indstillinger.
@@ -20,6 +22,8 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
+- Specific PowerPoint/OBS connection reasons in status and Stream Deck, with safe Danish/English messages.
+- OBS commands interrupted after transmission starts report an unknown outcome; no automatic retries.
 - Fixed connection replies when the Stream Deck inspector and key have different IDs; covered by a regression test.
 - Windows x64 installer with included .NET and an official Stream Deck installation package.
 - Danish/English control window with start/stop, connection status, persistent token copying and DPAPI-encrypted OBS settings.

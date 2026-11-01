@@ -63,10 +63,17 @@ public sealed class ComSlideShowSession : ISlideShowSession
         try
         {
             var clsid = new Guid("91493441-5A91-11CF-8700-00AA0060263B");
-            GetActiveObject(ref clsid, IntPtr.Zero, out var active);
+            object active;
+            try { GetActiveObject(ref clsid, IntPtr.Zero, out active); }
+            catch (COMException error) when (error.HResult == unchecked((int)0x800401E3))
+            {
+                throw new SlideShowUnavailableException(SlideShowFailure.NotRegistered);
+            }
             dynamic app = Track(active);
             dynamic windows = Track(app.SlideShowWindows);
-            if ((int)windows.Count != 1) throw new SlideShowUnavailableException();
+            var windowCount = (int)windows.Count;
+            if (windowCount == 0) throw new SlideShowUnavailableException(SlideShowFailure.NoSlideshow);
+            if (windowCount != 1) throw new SlideShowUnavailableException(SlideShowFailure.MultipleSlideshows);
             dynamic window = Track(windows.Item(1));
             dynamic presentation = Track(window.Presentation);
             dynamic slides = Track(presentation.Slides);

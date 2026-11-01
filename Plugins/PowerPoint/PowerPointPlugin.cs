@@ -41,10 +41,11 @@ public sealed class PowerPointPlugin : IHubPlugin
             await session.ApplyAsync(command.Action, slide, cancellationToken);
             return Wire.Result(command, true, "ok", "Slideshow-kommando udført.", "Slideshow command completed.");
         }
-        catch (SlideShowUnavailableException)
+        catch (SlideShowUnavailableException error)
         {
+            var message = FailureMessage(error.Reason);
             return Wire.Result(command, false, "slideshow_unavailable",
-                "Start præcis ét PowerPoint-slideshow manuelt.", "Start exactly one PowerPoint slideshow manually.");
+                message.Da, message.En, new { reason = FailureCode(error.Reason) });
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -60,12 +61,36 @@ public sealed class PowerPointPlugin : IHubPlugin
             var snapshot = await session.ReadAsync(cancellationToken);
             return new("powerpoint", "ready", new("Slideshow tilsluttet.", "Slideshow connected."), Wire.Data(snapshot));
         }
-        catch (SlideShowUnavailableException)
+        catch (SlideShowUnavailableException error)
         {
-            return new("powerpoint", "unavailable", new("Intet entydigt slideshow.", "No unambiguous slideshow."));
+            return new("powerpoint", "unavailable", FailureMessage(error.Reason), Wire.Data(new { reason = FailureCode(error.Reason) }));
         }
     }
 
+    private static string FailureCode(SlideShowFailure reason) => reason switch
+    {
+        SlideShowFailure.NotRegistered => "powerpoint_not_found",
+        SlideShowFailure.NoSlideshow => "no_slideshow",
+        SlideShowFailure.MultipleSlideshows => "multiple_slideshows",
+        _ => "powerpoint_unavailable"
+    };
+
+    private static LocalizedText FailureMessage(SlideShowFailure reason) => reason switch
+    {
+        SlideShowFailure.NotRegistered => new("PowerPoint kunne ikke findes. Åbn PowerPoint og start ét slideshow; vent, til programmet er klar.",
+            "PowerPoint could not be found. Open PowerPoint and start one slideshow; wait until it is ready."),
+        SlideShowFailure.NoSlideshow => new("PowerPoint er åbent, men intet slideshow kører. Start visningen i PowerPoint.",
+            "PowerPoint is open, but no slideshow is running. Start the slideshow in PowerPoint."),
+        SlideShowFailure.MultipleSlideshows => new("Flere slideshows kører. Afslut de ekstra visninger, så kun ét slideshow er aktivt.",
+            "Multiple slideshows are running. End the extra shows so exactly one remains active."),
+        _ => new("PowerPoint-forbindelsen er utilgængelig. Luk eventuelle dialoger i PowerPoint og kontrollér status igen.",
+            "The PowerPoint connection is unavailable. Close any PowerPoint dialogs and check status again.")
+    };
+
     public ValueTask DisposeAsync() => session?.DisposeAsync() ?? ValueTask.CompletedTask;
 }
-public sealed class SlideShowUnavailableException : Exception;
+public enum SlideShowFailure { ConnectionUnavailable, NotRegistered, NoSlideshow, MultipleSlideshows }
+public sealed class SlideShowUnavailableException(SlideShowFailure reason = SlideShowFailure.ConnectionUnavailable) : Exception
+{
+    public SlideShowFailure Reason { get; } = reason;
+}

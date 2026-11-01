@@ -48,6 +48,26 @@ public sealed class PluginTests
     }
 
     [Theory]
+    [InlineData(SlideShowFailure.NotRegistered, "powerpoint_not_found")]
+    [InlineData(SlideShowFailure.NoSlideshow, "no_slideshow")]
+    [InlineData(SlideShowFailure.MultipleSlideshows, "multiple_slideshows")]
+    [InlineData(SlideShowFailure.ConnectionUnavailable, "powerpoint_unavailable")]
+    public async Task PowerPointFailureReasonIsPreservedInStatusAndCommands(SlideShowFailure reason, string code)
+    {
+        var session = new FakeSlideShow { Unavailable = true, FailureReason = reason };
+        await using var plugin = new PowerPointPlugin(session);
+        var status = await plugin.GetStatusAsync(default);
+        var command = await plugin.ExecuteAsync(DispatcherTests.Command("powerpoint", "next"), default);
+        Assert.Equal("unavailable", status.State);
+        Assert.Equal(code, status.Data!.Value.GetProperty("reason").GetString());
+        Assert.Equal(code, command.Data!.Value.GetProperty("reason").GetString());
+        Assert.Equal(status.Message, command.Message);
+        Assert.NotEqual(status.Message.Da, status.Message.En);
+        Assert.False(command.Success);
+        Assert.Null(session.Action);
+    }
+
+    [Theory]
     [InlineData("save")][InlineData("open")][InlineData("edit")][InlineData("close")]
     public async Task PresentationFileOperationsAreNotSupported(string action)
     {
@@ -107,13 +127,14 @@ public sealed class PluginTests
         public string? Action;
         public int? Slide;
         public bool Unavailable;
+        public SlideShowFailure FailureReason;
         public Task ApplyAsync(string action, int? slide, CancellationToken cancellationToken)
         {
-            if (Unavailable) throw new SlideShowUnavailableException();
+            if (Unavailable) throw new SlideShowUnavailableException(FailureReason);
             Action = action; Slide = slide; return Task.CompletedTask;
         }
         public Task<SlideShowSnapshot> ReadAsync(CancellationToken cancellationToken)
-            => Unavailable ? throw new SlideShowUnavailableException() : Task.FromResult(new SlideShowSnapshot(3, 10, 1));
+            => Unavailable ? throw new SlideShowUnavailableException(FailureReason) : Task.FromResult(new SlideShowSnapshot(3, 10, 1));
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
     private sealed class FakeObsClient : IObsClient

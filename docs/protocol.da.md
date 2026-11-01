@@ -76,3 +76,14 @@ Status indeholder `protocolVersion`, `version`, `observedAt` og `plugins`. Hvert
 - Tilstande: `ready`, `unavailable`, `unsupported`, `not_implemented`.
 
 Hvert plugins statusopslag har et budget på 10 sekunder. Status samles sekventielt, og observedAt markerer slutningen af indsamlingen; det er ikke en atomisk måling. Manglende eller utilgængelig status må aldrig fortolkes som stoppet optagelse eller stoppet udsendelse.
+
+## Konkrete forbindelsesfejl
+
+Ved kendte fejl indeholder status og kommandosvar `data.reason`. Felterne er valgfrie og ændrer ikke protokolversion 1. Klienter skal have en generel tekst som fallback ved ukendte årsager.
+
+| Plugin | Årsager |
+|---|---|
+| PowerPoint | `powerpoint_not_found`, `no_slideshow`, `multiple_slideshows`, `powerpoint_unavailable` |
+| OBS | `connection_unavailable`, `password_missing`, `authentication_failed`, `protocol_error`, `connection_lost`, `request_rejected` |
+
+OBS-afbrydelse eller et ugyldigt svar efter påbegyndt afsendelse giver `outcome_unknown`; en udtrykkelig afvisning fra OBS giver `obs_rejected`. Ingen automatisk genafsendelse. Status forbliver `unavailable`, når årsagen kendes; det må ikke fortolkes som stoppet optagelse/udsendelse. Faste dansk/engelske tekster indeholder aldrig rå serverfejl, adgangskoder eller fejlkommentarer fra OBS. WebSocket-lukkekode 4009 identificerer afvist godkendelse ifølge den officielle OBS-protokol.
