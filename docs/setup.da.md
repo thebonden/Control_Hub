@@ -25,7 +25,7 @@ node --test tests/streamdeck.test.cjs tests/inspector.test.cjs
 node scripts/check-policy.cjs
 ```
 
-`node tests/host-smoke.cjs` starter en kortvarig testhost på port 5187. Stop din normale host først. Den bruger et tilfældigt testtoken, kontakter ikke produktions-OBS og sender ingen slideshow-kommandoer, men læser PowerPoint-status.
+`node tests/host-smoke.cjs` starter en kortvarig testhost på en separat, automatisk valgt loopback-port. Din normale host kan fortsætte. Den bruger et tilfældigt testtoken, kontakter ikke produktions-OBS og sender ingen slideshow-kommandoer, men læser PowerPoint-status.
 
 ## Lokal konfiguration
 
@@ -91,3 +91,5 @@ Status opdateres cirka hvert tredje sekund, når forbindelserne svarer hurtigt. 
 ## Stop
 
 Stop Control Hub med Ctrl+C i dens terminal. Pluginet må ikke afslutte PowerPoint eller OBS. Fjern eventuelt det lokale token fra Stream Deck-indstillinger, før en profil eksporteres.
+
+Ved udvikling kan `CONTROLHUB_PORT` vælge en anden lokal port; `0` lader operativsystemet vælge. Adressen er altid loopback. Kontrolvinduet fastsætter fortsat port 5187, som Stream Deck også bruger.

@@ -25,7 +25,7 @@ Et enkelt dansk/engelsk Windows-kontrolvindue og en brugerinstallation er inklud
 ```mermaid
 flowchart LR
     SD["Stream Deck-plugin"] -->|"HTTP på loopback + token"| H["Control Hub Host"]
-    AR["AndroidRemote · planlagt"] -.->|"Fremtidig parret transport"| H
+    AR["AndroidRemote · parring/adgang i bibliotek"] -.->|"Fremtidig parret transport"| H
     H --> C["Validering og dispatcher"]
     C --> P["PowerPoint-plugin · STA / COM"]
     C --> O["OBS-plugin · WebSocket v5"]
@@ -96,3 +96,7 @@ Automatiske tests dækker routing, validering, dubletter, timeout, adaptergræns
 Fysisk accept kræver et separat forløb med den faktiske Stream Deck, Office-version, OBS-opsætning og præsentation. Den omfatter fokusskift, animationer, første/sidste slide, forbindelsesbrud og kontrol af præsentationsfilernes hash før og efter. Testresultater skal registrere miljø, trin, forventet resultat, faktisk resultat og resterende fejl.
 
 Alle ændringer går gennem PR til `main`. Versionen angives til brugeren som **0.0.001**; tekniske pakkeformater normaliserer til `0.0.1` og `0.0.1.0`. Enhver release og ethvert tag kræver ejerens godkendelse. Hver .100-grænse kræver særskilt godkendelse, og 0.1.000 kræver fuldført, accepteret scope og dokumenteret test i det aktive miljø.
+
+## AndroidRemote: første kodeetape
+
+Parring og enhedsrettigheder er nu implementeret og testet som bibliotek. Enkeltbrugsbeviser, særskilte nøgler, udløb og tilbagekaldelse beskytter adgangen. Dispatcherens kø genkontrollerer adgang før udførelse; kommando-id’er holdes adskilt pr. parring. Telefonapp, ejerens parringsdialog og TLS-transport mangler fortsat. Hosten viser dette som utilgængelig transport og åbner ingen fjernadgang. Se [design og afgrænsning](androidremote.da.md).

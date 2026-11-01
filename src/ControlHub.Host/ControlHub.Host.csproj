@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
+    <ProjectReference Include="../../Plugins/AndroidRemote/ControlHub.Plugins.AndroidRemote.csproj" />
     <ProjectReference Include="../ControlHub.Core/ControlHub.Core.csproj" />
     <ProjectReference Include="../../Plugins/PowerPoint/ControlHub.Plugins.PowerPoint.csproj" />
     <ProjectReference Include="../../Plugins/Obs/ControlHub.Plugins.Obs.csproj" />

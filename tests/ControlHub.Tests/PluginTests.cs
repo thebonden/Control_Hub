@@ -105,10 +105,10 @@ public sealed class PluginTests
     [Fact]
     public async Task PlannedIntegrationCannotPretendToExecute()
     {
-        await using var plugin = new PlannedPlugin("androidremote", new("AndroidRemote", "AndroidRemote"));
+        await using var plugin = new PlannedPlugin("audio", new("Lyd", "Audio"));
         Assert.Empty(plugin.Descriptor.Actions);
         Assert.Equal("not_implemented", (await plugin.GetStatusAsync(default)).State);
-        Assert.False((await plugin.ExecuteAsync(DispatcherTests.Command("androidremote"), default)).Success);
+        Assert.False((await plugin.ExecuteAsync(DispatcherTests.Command("audio"), default)).Success);
     }
 
     [Theory]

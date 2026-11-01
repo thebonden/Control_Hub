@@ -11,7 +11,18 @@ internal sealed class HostSession : IDisposable
 {
     private Process? process;
     private readonly HttpClient client = new() { Timeout = TimeSpan.FromSeconds(35) };
+    private readonly int portNumber;
+    private readonly string apiBase;
     public bool IsRunning => process is { HasExited: false };
+
+    // Separat port til pakketest; brugergrænsefladen benytter altid standardporten.
+    // Separate port for package tests; the user interface always uses the default.
+    public HostSession(int portNumber = 5187)
+    {
+        if (portNumber is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(portNumber));
+        this.portNumber = portNumber;
+        apiBase = $"http://127.0.0.1:{portNumber}/api/v1/";
+    }
 
     public async Task StartAsync(Settings settings)
     {
@@ -21,8 +32,8 @@ internal sealed class HostSession : IDisposable
         {
             try
             {
-                await port.ConnectAsync(IPAddress.Loopback, 5187);
-                throw new InvalidOperationException("Port 5187 er optaget. Stop den anden host først. / Port 5187 is in use. Stop the other host first.");
+                await port.ConnectAsync(IPAddress.Loopback, portNumber);
+                throw new InvalidOperationException($"Port {portNumber} er optaget. Stop den anden host først. / Port {portNumber} is in use. Stop the other host first.");
             }
             catch (SocketException error) when (error.SocketErrorCode == SocketError.ConnectionRefused) { }
         }
@@ -34,6 +45,7 @@ internal sealed class HostSession : IDisposable
             RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true
         };
         start.Environment["CONTROLHUB_TOKEN"] = settings.Token;
+        start.Environment["CONTROLHUB_PORT"] = portNumber.ToString(System.Globalization.CultureInfo.InvariantCulture);
         start.Environment["CONTROLHUB_OBS_URL"] = settings.ObsUrl;
         start.Environment["CONTROLHUB_OBS_PASSWORD"] = settings.ObsPassword;
         start.Environment["CONTROLHUB_DESKTOP_LIFETIME"] = "stdin";
@@ -51,7 +63,7 @@ internal sealed class HostSession : IDisposable
                 if (process.HasExited) throw new InvalidOperationException("Hosten stoppede under start / Host exited during startup");
                 try
                 {
-                    using var response = await client.GetAsync("http://127.0.0.1:5187/api/v1/plugins");
+                    using var response = await client.GetAsync(apiBase + "plugins");
                     if (response.IsSuccessStatusCode) return;
                 }
                 catch (HttpRequestException) { }
@@ -65,7 +77,7 @@ internal sealed class HostSession : IDisposable
     public async Task<JsonDocument> StatusAsync()
     {
         if (!IsRunning) throw new InvalidOperationException("Control Hub er stoppet / Control Hub is stopped");
-        using var response = await client.GetAsync("http://127.0.0.1:5187/api/v1/status");
+        using var response = await client.GetAsync(apiBase + "status");
         response.EnsureSuccessStatusCode();
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
     }

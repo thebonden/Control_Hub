@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using ControlHub.Contracts;
 using ControlHub.Core;
+using ControlHub.Plugins.AndroidRemote;
 using ControlHub.Plugins.Obs;
 using ControlHub.Plugins.Planned;
 using ControlHub.Plugins.PowerPoint;
@@ -14,10 +15,14 @@ var token = Environment.GetEnvironmentVariable("CONTROLHUB_TOKEN");
 if (string.IsNullOrWhiteSpace(token) || token.Length < 32)
     throw new InvalidOperationException("CONTROLHUB_TOKEN skal være mindst 32 tegn / CONTROLHUB_TOKEN must be at least 32 characters.");
 var tokenHash = SHA256.HashData(Encoding.UTF8.GetBytes("Bearer " + token));
+var portText = Environment.GetEnvironmentVariable("CONTROLHUB_PORT") ?? "5187";
+if (!int.TryParse(portText, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture,
+    out var port) || port is < 0 or > 65535)
+    throw new InvalidOperationException("Ugyldig lokal port / Invalid local port.");
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Listen(IPAddress.Loopback, 5187);
+    options.Listen(IPAddress.Loopback, port);
     options.Limits.MaxRequestBodySize = 16 * 1024;
 });
 builder.Services.AddRateLimiter(options =>
@@ -35,7 +40,7 @@ var plugins = new IHubPlugin[]
     new PowerPointPlugin(),
     new ObsPlugin(new ObsClient(new Uri(Environment.GetEnvironmentVariable("CONTROLHUB_OBS_URL") ?? "ws://127.0.0.1:4455"),
         Environment.GetEnvironmentVariable("CONTROLHUB_OBS_PASSWORD"))),
-    new PlannedPlugin("androidremote", new("AndroidRemote", "AndroidRemote")),
+    new AndroidRemotePlugin(),
     new PlannedPlugin("audio", new("Lyd", "Audio")),
     new PlannedPlugin("logitech", new("Logitech", "Logitech")),
     new PlannedPlugin("android-live", new("Android Live", "Android Live")),

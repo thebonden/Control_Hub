@@ -1,17 +1,13 @@
-# AndroidRemote / AndroidRemote
+# AndroidRemote
 
 ## Dansk
 
-Status i 0.0.001: **planlagt, ikke implementeret**. Plugin-id: `androidremote`. Hosten registrerer en fælles `PlannedPlugin` med tom handlingsliste og `not_implemented`-status. Der er ingen driver, transport eller app i denne mappe endnu.
+**Parring og adgangskontrol er implementeret som C#-bibliotek. Telefonapp og transport mangler.** Alt integrationskode ligger under denne mappe. RemoteDeviceRegistry håndterer enkeltbrugsparring, enhedsnøgler, rettigheder, udløb og tilbagekaldelse. RemoteCommandGateway kontrollerer adgang til den fælles dispatcher og status. RemotePermissions accepterer kun kendte PowerPoint- og OBS-handlinger.
 
-Næste prioritet efter Stream Deck/PowerPoint/OBS. Afklar om navnet betyder en eksisterende app eller en ny klient. Design derefter en mobil knapflade, parring, TLS, enhedsgodkendelse, genkaldelse og status. Genbrug protokol v1; åbn ikke den eksisterende loopback-host på LAN. Ingen automatisk replay efter mobil genforbindelse.
-
-Accept kræver en dokumenteret protokol, fejl- og forbindelsestests, hardwaretest og danske/engelske brugertekster. Implementationskode skal placeres i denne mappe under `Plugins/`.
+Hosten registrerer AndroidRemotePlugin med modenhed development, tom handlingsliste og unavailable / transport_not_configured. Ingen nye HTTP-ruter eller netværksporte. Tests bruger simulerede enheder. Læs [design, test og næste trin](../../docs/androidremote.da.md). AndroidRemote er ejerens valgte nye Control Hub-klient til Android; tredjepartskompatibilitet er ikke implementeret.
 
 ## English
 
-0.0.001 status: **planned, not implemented**. Plugin ID: `androidremote`. The host registers a shared `PlannedPlugin` with an empty action list and `not_implemented` status. No driver, transport or app exists in this directory yet.
+**Pairing and authorization are implemented as a C# library. The phone app and transport remain unimplemented.** All integration code lives in this directory. RemoteDeviceRegistry handles single-use pairing, device credentials, permissions, expiry and revocation. RemoteCommandGateway authorizes access to the shared dispatcher and status. RemotePermissions accepts only known PowerPoint and OBS actions.
 
-Next priority after Stream Deck/PowerPoint/OBS. Establish whether this means an existing app or a new client. Then design mobile buttons, pairing, TLS, device authorization, revocation and status. Reuse protocol v1; do not expose the existing loopback host on the LAN. Never automatically replay commands after mobile reconnection.
-
-Acceptance requires a documented protocol, error and connection tests, hardware testing and Danish/English user text. Implementation code must be placed in this directory under `Plugins/`.
+The host registers AndroidRemotePlugin with development maturity, no actions and unavailable / transport_not_configured. No new HTTP routes or listening ports. Tests use simulated devices. Read the [design, tests and next steps](../../docs/androidremote.en.md). AndroidRemote is the owner-selected new Control Hub client for Android; third-party compatibility is not implemented.

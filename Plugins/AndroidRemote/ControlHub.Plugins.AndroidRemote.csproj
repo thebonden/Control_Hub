@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/ControlHub.Core/ControlHub.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -87,3 +87,7 @@ Known failures include `data.reason` in status and command results. These option
 | OBS | `connection_unavailable`, `password_missing`, `authentication_failed`, `protocol_error`, `connection_lost`, `request_rejected` |
 
 An OBS disconnect or invalid reply after starting request transmission produces `outcome_unknown`; an explicit OBS rejection produces `obs_rejected`. No automatic retry. Status remains `unavailable` when a cause is known; it must not imply recording/streaming is stopped. Fixed Danish/English messages never include raw server errors, passwords or OBS error comments. WebSocket close code 4009 identifies authentication failure according to the official OBS protocol.
+
+## AndroidRemote library
+
+AndroidRemote now advertises `development` maturity, no actions and `unavailable` with `data.reason = transport_not_configured`. The library has no HTTP routes yet. Internally it uses protocol v1 and may return `access_denied` before allowing plugin actions or cached results. Revocation is rechecked after the command queue; responses preserve the client command ID. See [pairing and access](androidremote.en.md).

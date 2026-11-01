@@ -59,3 +59,7 @@ A live check sent simulated key events through the production plugin bridge to t
 The owner subsequently confirmed that the physical Next key on Stream Deck XL changes slides. The follow-up COM read did not find exactly one active slideshow, so the resulting slide number was not independently verified. Profile 2 has Status, Next, Previous, OBS SORT and OBS PPT. Physical presses on the other keys, recording, streaming, mute, animations and full hardware acceptance remain unconfirmed.
 
 On 1 November, 51 C# tests and 27 JavaScript tests pass after adding specific connection reasons. Tests cover missing/rejected OBS passwords, a closed port, malformed handshake, disconnect after dispatch, PowerPoint failure reasons and safe bilingual status messages. Fault tests use a simulated OBS server; they do not change the user's server settings.
+
+## AndroidRemote implementation stage — 1 November 2026
+
+After adding the AndroidRemote library, 89 C# tests and 27 JavaScript tests pass. The 38 new cases cover concurrent single-use pairing, expiry, wrong tokens, permissions, device limits, revocation during queueing/status reads, isolated duplicate history and unknown outcomes without automatic replay. Host smoke tests pass on a separate local port while the regular Control Hub runs. Build: zero warnings/errors. These are library tests with simulated devices, not Android hardware tests.

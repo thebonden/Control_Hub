@@ -15,3 +15,5 @@ Disse officielle kilder ligger til grund for integrationsvalgene. / These offici
 - [Inno Setup per-user installation / brugerinstallation](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm)
 
 Henvisninger beskriver API'er; de er ikke bevis for lokal hardwaretest. / References describe APIs; they are not evidence of local hardware testing.
+
+- [.NET fixed-time hash comparison / sammenligning af hash](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptographicoperations.fixedtimeequals?view=net-10.0)

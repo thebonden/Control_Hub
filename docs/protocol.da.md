@@ -87,3 +87,7 @@ Ved kendte fejl indeholder status og kommandosvar `data.reason`. Felterne er val
 | OBS | `connection_unavailable`, `password_missing`, `authentication_failed`, `protocol_error`, `connection_lost`, `request_rejected` |
 
 OBS-afbrydelse eller et ugyldigt svar efter påbegyndt afsendelse giver `outcome_unknown`; en udtrykkelig afvisning fra OBS giver `obs_rejected`. Ingen automatisk genafsendelse. Status forbliver `unavailable`, når årsagen kendes; det må ikke fortolkes som stoppet optagelse/udsendelse. Faste dansk/engelske tekster indeholder aldrig rå serverfejl, adgangskoder eller fejlkommentarer fra OBS. WebSocket-lukkekode 4009 identificerer afvist godkendelse ifølge den officielle OBS-protokol.
+
+## AndroidRemote-bibliotek
+
+AndroidRemote annoncerer nu modenhed `development`, tom handlingsliste og `unavailable` med `data.reason = transport_not_configured`. Biblioteket har ingen HTTP-ruter endnu. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).

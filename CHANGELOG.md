@@ -3,6 +3,9 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
+- AndroidRemote-bibliotek med enkeltbrugsparring, enhedsrettigheder, udløb og tilbagekaldelse. Ingen telefonapp eller transport endnu.
+- Adgang kontrolleres igen efter kommandokøen; kommandosvar holdes adskilt pr. parret enhed.
+- Host-smoketest bruger en separat lokal port, så den åbne Control Hub kan fortsætte.
 - Konkrete forbindelsesårsager for PowerPoint og OBS i status og Stream Deck, med sikre dansk/engelske tekster.
 - Afbrudte OBS-kommandoer efter påbegyndt afsendelse rapporteres som ukendt udfald; aldrig automatisk genafsendelse.
 - Rettet forbindelsessvar, når Stream Decks indstillingsvindue og knap har forskellige id'er; dækket af en regressionstest.
@@ -22,6 +25,9 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
+- AndroidRemote library with single-use pairing, device permissions, expiry and revocation. No phone app or transport yet.
+- Authorization is rechecked after queueing; command results are isolated per paired device.
+- Host smoke tests use a separate local port so the open Control Hub can keep running.
 - Specific PowerPoint/OBS connection reasons in status and Stream Deck, with safe Danish/English messages.
 - OBS commands interrupted after transmission starts report an unknown outcome; no automatic retries.
 - Fixed connection replies when the Stream Deck inspector and key have different IDs; covered by a regression test.

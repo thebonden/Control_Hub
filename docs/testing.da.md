@@ -59,3 +59,7 @@ En praktisk prøve sendte simulerede knaptryk gennem pluginets produktionskode t
 Ejeren bekræftede derefter, at den fysiske Næste-knap på Stream Deck XL skifter slide. Den efterfølgende COM-aflæsning fandt ikke præcis ét aktivt slideshow, så det konkrete slidenummer er ikke uafhængigt verificeret. Profile 2 har Status, Næste, Forrige, OBS SORT og OBS PPT. Fysiske tryk på de øvrige knapper samt optagelse, udsendelse, mute, animationer og fuld hardwareaccept er endnu ikke bekræftet.
 
 Den 1. november består 51 C#-tests og 27 JavaScript-tests efter tilføjelse af konkrete forbindelsesårsager. Tests dækker manglende og afvist OBS-adgangskode, lukket port, ugyldigt håndtryk, afbrydelse efter afsendelse, PowerPoint-fejlårsager og sikker tosproget statusvisning. Den simulerede OBS-server bruges til fejlprøver; brugerens serverindstillinger ændres ikke af testene.
+
+## AndroidRemote-kodeetape — 1. november 2026
+
+Efter AndroidRemote-biblioteket består 89 C#-tests og 27 JavaScript-tests. De 38 nye testtilfælde omfatter samtidig enkeltbrugsparring, udløb, forkert nøgle, rettigheder, enhedsgrænser, tilbagekaldelse under kø/statuslæsning, adskilt dublethistorik og ukendt udfald uden automatisk replay. Host-smoketesten består på en separat lokal port, mens den normale Control Hub kører. Build: nul advarsler/fejl. Dette er bibliotekstest med simulerede enheder, ikke Android-hardwaretest.

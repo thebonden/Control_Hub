@@ -20,7 +20,8 @@ public sealed class CommandDispatcher
         this.timeout = timeout ?? TimeSpan.FromSeconds(10);
     }
 
-    public async Task<CommandResult> DispatchAsync(Command command, CancellationToken cancellationToken = default)
+    public async Task<CommandResult> DispatchAsync(Command command, CancellationToken cancellationToken = default,
+        Func<bool>? authorizeBeforeDispatch = null)
     {
         if (command.ProtocolVersion != HubVersion.Protocol)
             return Wire.Result(command, false, "unsupported_protocol", "Ukendt protokolversion.", "Unsupported protocol version.");
@@ -41,6 +42,12 @@ public sealed class CommandDispatcher
         }
         try
         {
+            // Kontrollér adgang efter køen og før cache/udførelse, så tilbagekaldelse virker under ventetid.
+            // Recheck access after queueing and before cache/execution so revocation applies while waiting.
+            if (authorizeBeforeDispatch is not null && !authorizeBeforeDispatch())
+                return Wire.Result(command, false, "access_denied",
+                    "Enheden har ikke adgang til handlingen. Kontrollér parring og rettigheder.",
+                    "This device cannot use this action. Check pairing and permissions.");
             var key = Guid.Parse(command.Id).ToString("D");
             var fingerprint = JsonSerializer.Serialize(new { command.Plugin, command.Action, command.Arguments }, Wire.Json);
             if (recent.TryGetValue(key, out var previous))

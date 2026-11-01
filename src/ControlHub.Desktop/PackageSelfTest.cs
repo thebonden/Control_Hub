@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Net;
+using System.Net.Sockets;
 
 namespace ControlHub.Desktop;
 
@@ -34,7 +36,13 @@ internal static class PackageSelfTest
             try { store.Load(); throw new InvalidDataException("Corrupt settings accepted"); }
             catch (CryptographicException) { checks.Add("Corrupt encrypted settings rejected"); }
             store.Save(original);
-            using var host = new HostSession();
+            using var reservation = new TcpListener(IPAddress.Loopback, 0);
+            reservation.Start();
+            var testPort = ((IPEndPoint)reservation.LocalEndpoint).Port;
+            reservation.Stop();
+            // Hvis porten overtages i mellemtiden, fejler testen sikkert ved HostSessions portkontrol.
+            // If another process takes the port, HostSession's occupied-port check fails safely.
+            using var host = new HostSession(testPort);
             await host.StartAsync(original);
             try
             {
@@ -42,8 +50,13 @@ internal static class PackageSelfTest
                 if (status.RootElement.GetProperty("version").GetString() != "0.0.001") throw new InvalidDataException("Wrong version");
                 var obs = status.RootElement.GetProperty("plugins").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "obs");
                 if (obs.GetProperty("state").GetString() != "unavailable") throw new InvalidDataException("OBS isolation failed");
+                var remote = status.RootElement.GetProperty("plugins").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "androidremote");
+                if (remote.GetProperty("state").GetString() != "unavailable" ||
+                    remote.GetProperty("data").GetProperty("reason").GetString() != "transport_not_configured")
+                    throw new InvalidDataException("AndroidRemote capability status failed");
+                checks.Add("AndroidRemote library reports unavailable phone transport");
                 checks.Add("Published host starts; authenticated status works; test OBS is isolated");
-                using var other = new HostSession();
+                using var other = new HostSession(testPort);
                 try { await other.StartAsync(original); throw new Exception("Duplicate host accepted"); }
                 catch (InvalidOperationException) { checks.Add("Occupied port rejected without stopping existing host"); }
                 using var stillRunning = await host.StatusAsync();

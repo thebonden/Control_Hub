@@ -3,18 +3,22 @@ const { spawn } = require("node:child_process");
 const { randomBytes, randomUUID } = require("node:crypto");
 const token = randomBytes(32).toString("hex");
 const child = spawn("dotnet", ["src/ControlHub.Host/bin/Release/net10.0/ControlHub.Host.dll"],
-  { env: { ...process.env, CONTROLHUB_TOKEN: token, CONTROLHUB_OBS_URL: "ws://127.0.0.1:1" }, stdio: ["ignore", "pipe", "pipe"] });
+  { env: { ...process.env, CONTROLHUB_TOKEN: token, CONTROLHUB_PORT: "0", CONTROLHUB_OBS_URL: "ws://127.0.0.1:1" }, stdio: ["ignore", "pipe", "pipe"] });
 let log = "";
-child.stdout.on("data", d => { log = (log + d).slice(-4000); });
+let base;
+child.stdout.on("data", d => {
+  log = (log + d).slice(-4000);
+  const address = log.match(/Now listening on: http:\/\/127\.0\.0\.1:(\d+)/);
+  if (address) base = `http://127.0.0.1:${address[1]}/api/v1/`;
+});
 child.stderr.on("data", d => { log = (log + d).slice(-4000); });
-const base = "http://127.0.0.1:5187/api/v1/";
 const headers = { Authorization:"Bearer " + token, "Content-Type":"application/json" };
 const post = body => fetch(base + "commands", {method:"POST",headers,body:JSON.stringify(body)});
 (async () => {
   try {
     let ready = false;
     for(let i=0;i<100;i++) {
-      try { if((await fetch(base+"plugins")).status===401) {ready=true;break;} } catch {}
+      try { if(base && (await fetch(base+"plugins")).status===401) {ready=true;break;} } catch {}
       if(child.exitCode !== null) throw new Error("Host exited: " + log);
       await new Promise(resolve=>setTimeout(resolve,100));
     }
@@ -34,11 +38,16 @@ const post = body => fetch(base + "commands", {method:"POST",headers,body:JSON.s
     assert.equal((await (await post(command)).json()).code,"invalid_command");
     const status=await (await fetch(base+"status",{headers})).json();
     assert.equal(status.version,"0.0.001");
-    assert.equal(status.plugins.find(p=>p.id==="androidremote").state,"not_implemented");
+    assert.equal(status.plugins.find(p=>p.id==="androidremote").state,"unavailable");
+    assert.equal(status.plugins.find(p=>p.id==="androidremote").data.reason,"transport_not_configured");
+    assert.deepEqual(catalog.find(p=>p.id==="androidremote").actions,[]);
     assert.equal(status.plugins.find(p=>p.id==="obs").state,"unavailable");
     const { createBridge } = require('../Plugins/StreamDeck/dk.thebonden.controlhub.sdPlugin/bridge.js');
     const messages = [];
-    const bridge = createBridge(message => messages.push(message));
+    const bridge = createBridge(message => messages.push(message), (url, options) => {
+      assert.equal(url, 'http://127.0.0.1:5187/api/v1/status');
+      return fetch(base + 'status', options);
+    });
     const action = 'dk.thebonden.controlhub.next';
     await bridge.handle({event:'willAppear',context:'smoke-key',action,payload:{settings:{token}}});
     await bridge.handle({event:'sendToPlugin',context:'smoke-key',action,
