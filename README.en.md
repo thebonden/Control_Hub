@@ -28,7 +28,7 @@ The goal is to give operators clear buttons, predictable commands and truthful s
 | PowerPoint COM | Next, previous, go to slide, black screen, resume and status on an STA thread | Windows; exactly one existing slideshow; live acceptance pending |
 | OBS WebSocket v5 | Authentication, scene selection, start/stop recording and streaming, explicit mute state, status | Local OBS only; new connection per request; live acceptance pending |
 | Stream Deck | 12 actions, Danish/English settings, result feedback, status key and installation package | Loading verified locally; complete hardware acceptance pending |
-| AndroidRemote | Windows invitation and revocation dialog, local owner routes and tested device authorization | No Android app or phone transport yet |
+| AndroidRemote | Installable Android app, next/previous slide, OBS scene and status over paired HTTPS | Windows and phone need reachability on a private IPv4 network |
 | Audio, Logitech, Android Live, physical remote, Flux Keyboard | Directories, integration plans and status placeholders | No working device drivers yet |
 
 OBS audio control applies to named OBS inputs. The separate operating-system audio plugin remains planned. Stream Deck is an external client under `Plugins/StreamDeck/`; it is not reported as a hardware-connected C# plugin.

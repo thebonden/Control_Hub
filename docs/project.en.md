@@ -25,7 +25,7 @@ A small Danish/English Windows control window and per-user installer are include
 ```mermaid
 flowchart LR
     SD["Stream Deck plugin"] -->|"Loopback HTTP + token"| H["Control Hub Host"]
-    AR["AndroidRemote · pairing/access library"] -.->|"Future paired transport"| H
+    AR["AndroidRemote · Android app"] -->|"Paired HTTPS via phone server"| H
     H --> C["Validation and dispatcher"]
     C --> P["PowerPoint plugin · STA / COM"]
     C --> O["OBS plugin · WebSocket v5"]
@@ -99,4 +99,4 @@ All changes go through a PR to `main`. The user-facing version is **0.0.001**; t
 
 ## AndroidRemote: first implementation stage
 
-Pairing and device permissions are now implemented and tested as a library. Single-use secrets, individual tokens, expiry and revocation control access. The dispatcher rechecks authorization after queueing; command IDs are isolated per pairing. The control window now has **Manage phone access** for creating invitations, selecting permissions and revoking access. The Android app and TLS transport remain unimplemented. The host reports unavailable transport and opens no remote access. See the [design and scope](androidremote.en.md).
+Pairing and device permissions are now implemented and tested as a library. Single-use secrets, individual tokens, expiry and revocation control access. The dispatcher rechecks authorization after queueing; command IDs are isolated per pairing. The control window now has **Manage phone access** for creating invitations, selecting permissions and revoking access. AndroidRemote for Android 8 or later connects to an optional separate HTTPS server on the selected network address. It can advance or reverse the slideshow, select a named OBS scene and read status. See the [design and scope](androidremote.en.md).

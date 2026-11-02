@@ -66,4 +66,6 @@ Efter AndroidRemote-biblioteket består 89 C#-tests og 27 JavaScript-tests. De 3
 
 ## Telefonvindue — 2. november 2026
 
+Android-APK'en blev efterfølgende installeret på en Android 15-testemulator. Testen afviste et ændret certifikataftryk og brugte derefter samme bevis med det rigtige aftryk. Næste og Forrige gav to navigationer i alt. Ét tryk på sceneknappen gav ét OBS-skift. Efter netværksafbrydelse kom status tilbage med den oprindelige slide og valgte scene. Tællerne steg ikke ved genforbindelse eller tilbagekaldelse. Telefonen genlæste sin krypterede session mellem prøveforløbene. PowerPoint- og OBS-adapterne brugte kontrollerede testsessioner.
+
 Servertesten opretter, viser og annullerer testbeviser og kontrollerer kapacitetsgrænsen. Manglende ejernøgle, kun Stream Deck-nøglen, Origin-kald og ugyldige felter afvises. Beviser og nøgler er ikke i oversigten. Den pakkede desktopklient har en separat test af opret/læs/annuller. Det faktiske Windows-vindue blev kontrolleret visuelt på begge sprog med simulerede enheder, inklusive dansk oprettelse af et bevis med kun læseadgang. Der blev ikke anvendt en telefon.

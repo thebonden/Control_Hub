@@ -3,8 +3,9 @@
 ## 0.0.001 — udviklingsversion / development version
 
 ### Dansk
-- Nyt Windows-vindue **Administrér telefonadgang**: vælg rettigheder, opret et to-minutters bevis, se ventende/parrede enheder og tilbagekald adgang. Lokale ejerruter kræver en separat nøgle for hver opstart; Stream Deck-nøglen alene er utilstrækkelig. Android-app og telefontransport mangler stadig.
-- AndroidRemote-bibliotek med enkeltbrugsparring, enhedsrettigheder, udløb og tilbagekaldelse. Ingen telefonapp eller transport endnu.
+- AndroidRemote til Android 8 og nyere med parret HTTPS, certifikatkontrol, krypteret enhedsnøgle, slides, OBS-scene og status. APK-knapperne er prøvet på en Android 15-emulator med bogførte kommandoer, afbrydelse og tilbagekaldelse.
+- Nyt Windows-vindue **Administrér telefonadgang**: vælg rettigheder, opret et to-minutters bevis, se ventende/parrede enheder og tilbagekald adgang. Lokale ejerruter kræver en separat nøgle for hver opstart; Stream Deck-nøglen alene er utilstrækkelig.
+- AndroidRemote-bibliotek med enkeltbrugsparring, enhedsrettigheder, udløb og tilbagekaldelse.
 - Adgang kontrolleres igen efter kommandokøen; kommandosvar holdes adskilt pr. parret enhed.
 - Host-smoketest bruger en separat lokal port, så den åbne Control Hub kan fortsætte.
 - Konkrete forbindelsesårsager for PowerPoint og OBS i status og Stream Deck, med sikre dansk/engelske tekster.
@@ -26,8 +27,9 @@
 - Fysisk test i det aktive miljø afventer. Ingen release eller tag.
 
 ### English
-- New Windows **Manage phone access** dialog: select permissions, create a two-minute invitation, list pending/paired devices and revoke access. Local owner routes require a separate key for each launch; the Stream Deck key alone is insufficient. Android app and phone transport remain unimplemented.
-- AndroidRemote library with single-use pairing, device permissions, expiry and revocation. No phone app or transport yet.
+- AndroidRemote for Android 8 and later with paired HTTPS, certificate verification, encrypted device credentials, slides, OBS scene and status. Android 15 emulator tests exercise the APK controls, counted commands, disconnection and revocation.
+- New Windows **Manage phone access** dialog: select permissions, create a two-minute invitation, list pending/paired devices and revoke access. Local owner routes require a separate key for each launch; the Stream Deck key alone is insufficient.
+- AndroidRemote library with single-use pairing, device permissions, expiry and revocation.
 - Authorization is rechecked after queueing; command results are isolated per paired device.
 - Host smoke tests use a separate local port so the open Control Hub can keep running.
 - Specific PowerPoint/OBS connection reasons in status and Stream Deck, with safe Danish/English messages.

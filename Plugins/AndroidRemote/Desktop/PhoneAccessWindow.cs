@@ -15,10 +15,11 @@ public sealed class PhoneAccessWindow : Form
     private readonly Label feedback = new() { AutoSize = true, MaximumSize = new Size(650, 0) };
     private readonly Button create = new() { AutoSize = true }, copy = new() { AutoSize = true },
         remove = new() { AutoSize = true }, all = new() { AutoSize = true }, refresh = new() { AutoSize = true };
+    private readonly Button saveFile = new() { AutoSize = true };
     private readonly System.Windows.Forms.Timer timer = new() { Interval = 4000 };
     private readonly CancellationTokenSource lifetime = new();
     private PairingOffer? offer;
-    private bool busy, loaded, closed;
+    private bool busy, loaded, closed, transportReady;
     private sealed record Row(string Id, bool Pending, string Name);
     private string T(string da, string en) => danish ? da : en;
     private string PermissionLabel(string id) => id switch
@@ -48,8 +49,8 @@ public sealed class PhoneAccessWindow : Form
         var heading = LabelFor(T("Telefonadgang", "Phone access"));
         heading.Font = new Font(Font, FontStyle.Bold);
         flow.Controls.AddRange([heading, LabelFor(T(
-            "Du kan oprette og fjerne parringsbeviser her. Android-appen og telefonforbindelsen er endnu ikke klar.",
-            "You can create and remove pairing invitations here. The Android app and phone connection are not available yet.")),
+            "Vælg telefonens rettigheder, opret et bevis, og overfør det privat til AndroidRemote.",
+            "Choose the phone permissions, create an invitation and transfer it privately to AndroidRemote.")),
             LabelFor(T("Telefonens navn", "Phone name")), name,
             LabelFor(T("Hvad må telefonen gøre?", "What may this phone do?")), permissions]);
         name.AccessibleName = T("Telefonens navn", "Phone name");
@@ -60,7 +61,8 @@ public sealed class PhoneAccessWindow : Form
         remove.Text = T("Fjern valgt adgang", "Remove selected access");
         all.Text = T("Fjern al adgang", "Remove all access");
         refresh.Text = T("Opdater listen", "Refresh list");
-        flow.Controls.Add(Buttons(create, copy));
+        saveFile.Text = T("Gem parringsfil", "Save invitation file");
+        flow.Controls.Add(Buttons(create, copy, saveFile));
         flow.Controls.Add(LabelFor(T("Parringsbeviser og parrede telefoner", "Invitations and paired phones")));
         list.AccessibleName = T("Telefonadgang", "Phone access");
         list.Columns.Add(T("Navn", "Name"), 165);
@@ -97,6 +99,16 @@ public sealed class PhoneAccessWindow : Form
             Clipboard.SetText(JsonSerializer.Serialize(offer, Wire.Json));
             feedback.Text = T("Parringsbevis kopieret. Del det kun med den tiltænkte telefon.",
                 "Invitation copied. Share it only with the intended phone.");
+        });
+        saveFile.Click += async (_, _) => await RunAsync(async ct =>
+        {
+            using var dialog = new SaveFileDialog { Filter = "Control Hub (*.controlhub)|*.controlhub",
+                FileName = "AndroidRemote.controlhub", DefaultExt = "controlhub" };
+            if (dialog.ShowDialog(this) != DialogResult.OK) return;
+            await ReloadAsync(ct);
+            if (closed || offer is null) return;
+            await File.WriteAllTextAsync(dialog.FileName, JsonSerializer.Serialize(offer, Wire.Json), ct);
+            feedback.Text = T("Åbn filen i AndroidRemote og tryk Par telefon.", "Open the file in AndroidRemote and tap Pair phone.");
         });
         remove.Click += async (_, _) =>
         {
@@ -149,6 +161,9 @@ public sealed class PhoneAccessWindow : Form
         }
         if (!loaded) feedback.Text = list.Items.Count == 0 ? T("Ingen telefoner eller ventende beviser.", "No phones or pending invitations.")
             : T("Listen er opdateret.", "List refreshed.");
+        transportReady = snapshot.TransportReady;
+        if (!transportReady) feedback.Text = T("Stop Control Hub, vælg Tillad AndroidRemote på lokalt netværk, og start igen.",
+            "Stop Control Hub, choose Allow AndroidRemote on local network and start again.");
         loaded = true;
     }
 
@@ -183,8 +198,8 @@ public sealed class PhoneAccessWindow : Form
     private void UpdateEnabled()
     {
         if (closed) return;
-        create.Enabled = !busy && loaded && !string.IsNullOrWhiteSpace(name.Text) && permissions.CheckedItems.Count > 0;
-        copy.Enabled = !busy && loaded && offer is not null;
+        create.Enabled = !busy && loaded && transportReady && !string.IsNullOrWhiteSpace(name.Text) && permissions.CheckedItems.Count > 0;
+        saveFile.Enabled = copy.Enabled = !busy && loaded && offer is not null;
         remove.Enabled = !busy && loaded && Selection() is not null;
         all.Enabled = !busy && loaded && list.Items.Count != 0;
         refresh.Enabled = !busy;

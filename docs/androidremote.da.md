@@ -1,48 +1,31 @@
-# AndroidRemote: parring og adgangskontrol
+# AndroidRemote i Control Hub 0.0.001
 
 [English](androidremote.en.md)
 
-Første kodetrin er et transportuafhængigt .NET 10-bibliotek under `Plugins/AndroidRemote/`, testet mod den rigtige dispatcher og simulerede enheder. Det er **ikke en installerbar Android-app eller en fungerende telefonforbindelse**.
+AndroidRemote giver operatøren fire handlinger på telefonen. Næste og forrige slide styrer det åbne slideshow. Skift OBS-scene bruger det scenenavn, operatøren indtaster. Status viser slideposition og den aktive OBS-scene eller forklarer, hvis en integration er utilgængelig.
 
-## Parringsforløb
+## Installér og par
 
-1. Kontrolvinduets **Administrér telefonadgang** kalder `BeginPairing` med et navn på 1–80 tegn uden kontroltegn og en eksplicit rettighedsliste.
-2. Biblioteket returnerer et parrings-id, et tilfældigt bevis og udløbstidspunkt. Beviset er 32 kryptografisk tilfældige bytes gengivet som 64 hextegn; det er ikke en kort PIN-kode. Det gælder i to minutter.
-3. Den fremtidige telefontransport afleverer id og bevis til `CompletePairing`. Højst ét samtidigt forsøg kan lykkes. Fem forkerte forsøg annullerer parringen; ugyldigt formaterede beviser tæller også.
-4. Vellykket parring giver et nyt enheds-id og en uafhængig nøgle, som gælder i otte timer. Navn og rettigheder kommer fra ejerens valg; telefonen kan ikke udvide dem.
-5. Kommandoer og status går gennem `RemoteCommandGateway`. Forkerte nøgler, manglende rettigheder, tilbagekaldte og udløbne enheder afvises.
+1. Installér den tilhørende Windows-udviklingspakke og `ControlHub-AndroidRemote-0.0.001.apk` på en telefon med Android 8 eller nyere. Brug Windows og telefon på samme lokale netværk.
+2. Før hoststart vælger du **Tillad AndroidRemote på lokalt netværk** og computerens private IPv4-adresse på det netværk, telefonen kan nå. Start Control Hub. Telefonserveren bruger TCP-port 5188. Den lokale desktop- og Stream Deck-host bruger fortsat loopback på port 5187.
+3. Åbn **Administrér telefonadgang**. Navngiv telefonen og vælg **Læs status**, **Styr slides** og **Skift OBS-scene** efter behov. Tryk **Opret parringsbevis**. Windows viser det som *Venter* i op til to minutter.
+4. Vælg **Gem parringsfil** og overfør filen privat, for eksempel via USB. Vælg **Åbn parringsfil** på telefonen og derefter **Par telefon**. Du kan også indsætte det kopierede bevis. Beviset indeholder en hemmelighed og serverens certifikataftryk. Brug en overførsel, hvor du har kontrol over afsender og modtager. Slet filen efter brug.
+5. Start et slideshow manuelt på Windows, og vælg en eksisterende scene i OBS. Telefonen viser knapper efter de valgte rettigheder. Et ukendt udfald kræver, at operatøren kontrollerer status før næste tryk.
 
-Ejeren kan annullere en parring, tilbagekalde én enhed eller tilbagekalde alle enheder og ventende parringer. Hemmeligheder returneres kun ved oprettelse og må ikke logges. Registeret gemmer SHA-256-hashværdier og sammenligner dem med `CryptographicOperations.FixedTimeEquals`. Enhedslister indeholder ingen nøgler. Dette gælder tilfældige nøgler med stor entropi, ikke brugeradgangskoder.
+**Fjern valgt adgang** i Windows tilbagekalder telefonens adgang. **Glem parring** på telefonen fjerner dens lokale legitimationsoplysninger. Ved hostgenstart oprettes nyt certifikat og nye parringer. Hvis certifikatkontrollen fejler efter genstart, vælg **Glem parring** og brug et nyt bevis.
 
-Der er højst otte ventende parringer og i alt 16 parrede/reserverede enhedspladser. Udløb bruger monoton tid; ændring af Windows-uret forlænger ikke adgangen. Viste UTC-tidspunkter er vejledende, hvis systemuret ændres. Alt findes kun i hukommelsen. Genstart kræver ny parring.
+## Forbindelse og adgang
 
-## Rettigheder
+Telefonserveren har sin egen HTTPS-lytter på én privat adresse. Telefonen kontrollerer serverens IP-navn, certifikatets gyldighed og SHA-256-aftrykket fra beviset før indløsning. Appen bruger direkte forbindelse og afviser omdirigeringer. Der oprettes ingen automatisk firewallregel. Kontrollér adgang på det private netværk, hvis telefonen ikke kan nå computeren.
 
-| Rettighed | Tillader |
-|---|---|
-| `status.read` | Hele Control Hub-statusobjektet, inklusive OBS-scenenavn |
-| `powerpoint.control` | `next`, `previous`, `goto`, `black`, `resume` |
-| `obs.scenes` | `scene.switch` |
-| `obs.recording` | `record.start`, `record.stop` |
-| `obs.streaming` | `stream.start`, `stream.stop` |
-| `obs.audio` | `input.mute` |
+Beviset har 256 tilfældige bits og kan bruges én gang. Fem fejlforsøg annullerer det. Hosten reserverer højst otte ventende beviser og i alt 16 enhedspladser. Udløb måles med monoton tid. Enhedsnøglen gælder i otte timer. Hosten gemmer kun dens hash i hukommelsen. På telefonen krypteres sessionen med AES-GCM og en nøgle i Android Keystore.
 
-Ingen rettigheder tilføjes automatisk. Der findes ingen wildcard-rettighed. Ukendte og dublerede rettigheder afvises. Rettigheder gælder handlingstyper, ikke individuelle scener/lydkilder. Filredigering, vilkårlige COM-kald og fokusafhængige tastetryk er ikke tilladt.
+Rettigheder tildeles særskilt til status, slides, scener, optagelse, streaming og OBS-lyd. Den første app har knapper til de første tre kategorier. Statusrettigheden giver adgang til det samlede statusobjekt. Hosten kontrollerer rettigheder før kommandoen og efter ventekøen. En igangsat handling kan stadig afsluttes efter tilbagekaldelse. Kommandosvar knyttes til klientens id og den enkelte parring. Appen genafsender ikke en kommando efter afbrydelse.
 
-## Kø, tilbagekaldelse og dubletter
+Telefonserveren begrænser en forespørgsel til 16 KiB, otte samtidige forespørgsler og 32 forbindelser. De samlede grænser pr. minut er 24 indløsningsforsøg og 240 status-/kommandokald. Ejeradministration foregår via den separate lokale host. [Protokol](protocol.da.md)
 
-Adgang kontrolleres ved modtagelse og efter dispatcherens ventekø, før cachelæsning eller udførelse. Tilbagekaldelse eller udløb under køen afviser dermed stadig ventende kommandoer. Kontrollen efter køen er grænsen for igangsættelse; tilbagekaldelse kan ikke fortryde allerede igangsat arbejde, herunder COM-kald. Status kontrollerer også adgang igen efter indsamling.
+## Byg og afprøv
 
-Klientens kommando-UUID mappes deterministisk til et internt UUID i parringens eget navnerum. Svaret får klientens oprindelige id tilbage. Samme id fra to parringer eller fra Stream Deck giver ikke adgang til det samme cachesvar. Historikken er stadig den fælles hukommelsescache med de seneste 1.024 afsendte id'er; den er ikke vedvarende replay-beskyttelse. Ny parring giver et nyt navnerum. Telefonen må aldrig automatisk genafspille gamle kommandoer efter genforbindelse eller genstart.
+Kildekode til appen og APK-bygning ligger under `Plugins/AndroidRemote/Android/`. Kør `build.py --help` med Python 3. Brug JDK 17 eller nyere, Android SDK Platform 35 og Build Tools 36.0.0. Angiv en udviklingsnøgle uden for repositoryet. Scriptet kompilerer, pakker og verificerer APK-signaturen. Brug samme udviklingsnøgle ved lokale opdateringer. En pakke signeret med en anden nøgle kræver afinstallation og ny parring.
 
-`access_denied` har faste danske/engelske tekster og udfører ingen pluginhandling. Timeout efter igangsat adapterarbejde bevarer `outcome_unknown`. Operatøren skal kontrollere status før en ny handling.
-
-## Før telefonbrug
-
-Der mangler en dansk/engelsk Android-klient og særskilt TLS-transport med verificeret serveridentitet, sikker overførsel af parringsbevis/nøgle og sikker lagring på telefonen. Transporten skal begrænse størrelse, samtidighed og forespørgselshastighed; bibliotekets parringsgrænser erstatter ikke dette. Derefter følger transporttests og fysisk Android-test.
-
-Kontrolvinduet bruger [lokale ejerruter](protocol.da.md). De kræver både hostens forbindelsesnøgle og en særskilt tilfældig ejernøgle, som kun gælder denne opstart. Stream Deck-nøglen alene kan ikke administrere adgang. Der er endnu ingen rute, hvor en telefon kan indløse beviset. Det lokale Control Hub-token skal ikke kopieres til telefonen. Hosten lytter fortsat kun på loopback; der åbnes ingen firewall eller LAN-adgang. Pluginstatus er `unavailable` / `transport_not_configured` med tom handlingsliste.
-
-## Test
-
-Tests dækker samtidig enkeltbrugsparring, udløb, ændring af systemur, forkerte beviser, kapacitetsgrænser, uforanderlige rettigheder, handlingsrettigheder, filhandlingsafvisning, adskilt dublethistorik, tilbagekaldelse/udløb under kø, tilbagekaldelse under statuslæsning, korrelation, timeout og ærlig transportstatus. Ingen præsentation ændres, og ingen virkelig optagelse eller streaming startes.
+Den automatiske Android 15-prøve installerer APK’en og bruger appens knapper gennem den rigtige TLS-server og PowerPoint-/OBS-adapterne. Kontrollerede testsessioner tæller handlinger. Forkert certifikat, parring, næste/forrige, sceneskift, status, afbrudt forbindelse, genforbindelse og tilbagekaldelse indgår. Prøven på en fysisk telefon med Windows, Office, OBS og det konkrete Wi-Fi-netværk dokumenteres særskilt. [Testvejledning](testing.da.md)

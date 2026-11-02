@@ -3,6 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.Http.Json;
+using System.Net.Security;
+using System.Net.Http.Headers;
 
 namespace ControlHub.Desktop;
 
@@ -42,8 +45,8 @@ internal static class PackageSelfTest
             reservation.Stop();
             // Hvis porten overtages i mellemtiden, fejler testen sikkert ved HostSessions portkontrol.
             // If another process takes the port, HostSession's occupied-port check fails safely.
-            using var host = new HostSession(testPort);
-            await host.StartAsync(original);
+            using var host = new HostSession(testPort, phonePort: 0);
+            await host.StartAsync(original, IPAddress.Loopback);
             try
             {
                 using var status = await host.StatusAsync();
@@ -51,17 +54,40 @@ internal static class PackageSelfTest
                 var obs = status.RootElement.GetProperty("plugins").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "obs");
                 if (obs.GetProperty("state").GetString() != "unavailable") throw new InvalidDataException("OBS isolation failed");
                 var remote = status.RootElement.GetProperty("plugins").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "androidremote");
-                if (remote.GetProperty("state").GetString() != "unavailable" ||
-                    remote.GetProperty("data").GetProperty("reason").GetString() != "transport_not_configured")
-                    throw new InvalidDataException("AndroidRemote capability status failed");
-                checks.Add("AndroidRemote library reports unavailable phone transport");
+                if (remote.GetProperty("state").GetString() != "ready")
+                    throw new InvalidDataException("AndroidRemote HTTPS listener failed");
+                checks.Add("Published phone listener starts on an isolated TLS port");
                 var owner = host.RemoteOwner;
                 var invite = await owner.BeginAsync("Package test", ["status.read"]);
                 var snapshot = await owner.GetAsync();
                 if (!snapshot.PendingPairings.Any(p => p.Id == invite.Id && p.Name == "Package test") ||
-                    snapshot.TransportReady || JsonSerializer.Serialize(snapshot).Contains(invite.Secret, StringComparison.Ordinal))
+                    !snapshot.TransportReady || JsonSerializer.Serialize(snapshot).Contains(invite.Secret, StringComparison.Ordinal))
                     throw new InvalidDataException("Owner invitation status failed");
-                await owner.RemoveAsync(invite.Id, pending: true);
+                var connection = invite.Transport ?? throw new InvalidDataException("Missing phone address");
+                using var phone = new HttpClient(new HttpClientHandler { UseProxy = false, AllowAutoRedirect = false,
+                    ServerCertificateCustomValidationCallback = (_, cert, _, errors) =>
+                        (errors & ~SslPolicyErrors.RemoteCertificateChainErrors) == 0 && cert is not null &&
+                        cert.GetCertHashString(HashAlgorithmName.SHA256) == connection.CertificateSha256 })
+                    { BaseAddress = new Uri(connection.Endpoint) };
+                using var claim = await phone.PostAsJsonAsync("/phone/v1/pair", new { invite.Id, invite.Secret });
+                claim.EnsureSuccessStatusCode();
+                using var credential = JsonDocument.Parse(await claim.Content.ReadAsStringAsync());
+                var deviceId = credential.RootElement.GetProperty("device").GetProperty("id").GetString()!;
+                phone.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credential.RootElement.GetProperty("token").GetString());
+                phone.DefaultRequestHeaders.Add("X-ControlHub-Device", deviceId);
+                using var phoneStatus = await phone.GetAsync("/phone/v1/status");
+                phoneStatus.EnsureSuccessStatusCode();
+                using var denied = await phone.PostAsJsonAsync("/phone/v1/commands", new { protocolVersion = "1",
+                    id = Guid.NewGuid().ToString("D"), plugin = "powerpoint", action = "next", arguments = new { } });
+                if (denied.StatusCode != HttpStatusCode.Forbidden) throw new InvalidDataException("Phone permission boundary failed");
+                using var isolated = await phone.GetAsync("/api/v1/plugins");
+                if (isolated.StatusCode != HttpStatusCode.NotFound) throw new InvalidDataException("Desktop route exposed on phone port");
+                await owner.RemoveAsync(deviceId, pending: false);
+                using var revoked = await phone.GetAsync("/phone/v1/status");
+                if (revoked.StatusCode != HttpStatusCode.Unauthorized) throw new InvalidDataException("Revoked device accepted");
+                checks.Add("Pinned TLS pairing, status, denied command, route isolation and revocation");
+                var cancelled = await owner.BeginAsync("Cancel", ["status.read"]);
+                await owner.RemoveAsync(cancelled.Id, pending: true);
                 if ((await owner.GetAsync()).PendingPairings.Count != 0) throw new InvalidDataException("Owner cancellation failed");
                 checks.Add("Desktop owner creates, lists and cancels an invitation; the secret is absent from lists");
                 checks.Add("Published host starts; authenticated status works; test OBS is isolated");

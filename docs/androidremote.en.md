@@ -1,48 +1,31 @@
-# AndroidRemote: pairing and authorization
+# AndroidRemote in Control Hub 0.0.001
 
 [Dansk](androidremote.da.md)
 
-The first implementation is a transport-independent .NET 10 library under `Plugins/AndroidRemote/`, tested with the real dispatcher and simulated devices. It is **not an installable Android app or a working phone connection**.
+AndroidRemote gives the operator four phone controls. Next and Previous navigate the existing slideshow. Switch OBS scene uses the scene name entered by the operator. Status shows slide position and the current OBS scene or explains when an integration is unavailable.
 
-## Pairing flow
+## Install and pair
 
-1. The control window’s **Manage phone access** dialog calls `BeginPairing` with a 1–80 character name without control characters and an explicit permission list.
-2. The library returns a pairing ID, random secret and expiry time. The secret is 32 cryptographically random bytes represented by 64 hexadecimal characters, not a short PIN. It lasts two minutes.
-3. The future phone transport submits the ID and secret to `CompletePairing`. At most one concurrent attempt succeeds. Five incorrect attempts cancel the pairing; malformed secrets count too.
-4. Successful pairing issues a new device ID and independent token lasting eight hours. The name and permissions come from the owner's selection; the phone cannot expand them.
-5. Commands and status pass through `RemoteCommandGateway`. Incorrect tokens, missing permissions, revoked and expired devices are denied.
+1. Install the matching Windows development package and `ControlHub-AndroidRemote-0.0.001.apk` on a phone running Android 8 or later. Connect Windows and the phone to the same local network.
+2. Before starting the host, select **Allow AndroidRemote on local network** and the computer’s private IPv4 address on the network reachable by the phone. Start Control Hub. The phone server uses TCP port 5188. The desktop and Stream Deck host continues to use loopback port 5187.
+3. Open **Manage phone access**. Name the phone and select **Read status**, **Control slides** and **Switch OBS scene** as needed. Click **Create invitation**. Windows lists it as *Pending* for up to two minutes.
+4. Choose **Save invitation file** and transfer the file privately, for example over USB. On the phone choose **Open invitation file** and then **Pair phone**. You can also paste the copied invitation. It contains a secret and the server certificate fingerprint. Use a transfer where you control sender and recipient. Delete the file after use.
+5. Start a slideshow manually on Windows and prepare an existing OBS scene. Controls follow the granted permissions. An unknown outcome requires checking status before another press.
 
-The owner can cancel a pairing, revoke one device or revoke all devices and pending pairings. Secrets are returned only at creation and must never be logged. The registry stores SHA-256 digests and compares them using `CryptographicOperations.FixedTimeEquals`. Device lists contain no credentials. This applies to high-entropy random tokens, not user passwords.
+**Remove selected access** in Windows revokes the phone. **Forget pairing** on the phone clears its local credentials. Restarting the host creates a new certificate and requires fresh pairings. If certificate verification fails after restarting, choose **Forget pairing** and use a fresh invitation.
 
-At most eight pairings may be pending, with a combined limit of 16 paired/reserved device slots. Expiry uses monotonic time; changing the Windows clock does not extend access. Displayed UTC times are advisory if the system clock changes. Everything is memory-only. Restart requires pairing again.
+## Connection and access
 
-## Permissions
+The phone server has a dedicated HTTPS listener on one private address. Before redemption the phone checks the server IP identity, certificate validity and the SHA-256 fingerprint from the invitation. The app connects directly and rejects redirects. Firewall rules remain under the owner’s control. Check private network reachability if the phone cannot reach Windows.
 
-| Permission | Allows |
-|---|---|
-| `status.read` | The complete Control Hub status object, including OBS scene name |
-| `powerpoint.control` | `next`, `previous`, `goto`, `black`, `resume` |
-| `obs.scenes` | `scene.switch` |
-| `obs.recording` | `record.start`, `record.stop` |
-| `obs.streaming` | `stream.start`, `stream.stop` |
-| `obs.audio` | `input.mute` |
+An invitation contains 256 random bits and is single-use. Five incorrect attempts cancel it. The host reserves up to eight pending invitations and 16 total device slots. Expiry uses monotonic time. The device credential lasts eight hours. The host retains only its digest in memory. The phone encrypts its session with AES-GCM using a key in Android Keystore.
 
-No permissions are added automatically. There is no wildcard permission. Unknown and duplicate permissions are rejected. Permissions apply to action types, not individual scenes/inputs. File editing, arbitrary COM calls and focus-dependent keystrokes are not allowed.
+Separate permissions cover status, slides, scenes, recording, streaming and OBS audio. The first app provides controls for the first three categories. Status permission covers the complete status object. The host checks access on command receipt and after queueing. Already admitted operations may finish after revocation. Command responses are associated with the client ID and the individual pairing. The app does not automatically replay commands after a disconnect.
 
-## Queueing, revocation and duplicates
+The phone server limits a request to 16 KiB, eight concurrent requests and 32 connections. Aggregate limits per minute are 24 redemption attempts and 240 status/command requests. Owner administration stays on the separate local host. [Protocol](protocol.en.md)
 
-Authorization is checked on receipt and after waiting for the dispatcher, before reading cached results or executing. Revocation or expiry while queued therefore rejects still-pending commands. The post-queue check is the admission boundary; revocation cannot undo already admitted work, including COM calls. Status also rechecks authorization after collection.
+## Build and test
 
-The client's command UUID is deterministically mapped to an internal UUID in the pairing's own namespace. Responses restore the original client ID. An identical ID from two pairings or Stream Deck cannot retrieve the same cached result. History is still the shared in-memory cache of the latest 1,024 dispatched IDs, not persistent replay protection. Pairing again creates a new namespace. Phones must never automatically replay old commands after reconnecting or restarting.
+App source and the APK build script are under `Plugins/AndroidRemote/Android/`. Run `build.py --help` with Python 3. Use JDK 17 or newer, Android SDK Platform 35 and Build Tools 36.0.0. Specify a development signing key outside the repository. The script compiles, packages and verifies the APK signature. Reuse the same development signing key for local updates. A package signed with a different key requires uninstalling and pairing again.
 
-`access_denied` uses fixed Danish/English messages and executes no plugin action. A timeout after adapter work starts preserves `outcome_unknown`. The operator must check status before another action.
-
-## Before phone use
-
-Remaining work includes a Danish/English Android client and separate TLS transport with verified server identity, secure pairing-secret/token transfer and secure storage on the phone. The transport must limit size, concurrency and request rate; library pairing limits do not replace these. Transport tests and physical Android testing must follow.
-
-The control window uses [local owner routes](protocol.en.md). They require both the host connection key and a separate random owner key for this launch. The Stream Deck key alone cannot manage access. There is no route for a phone to redeem an invitation yet. The local Control Hub token must not be copied to the phone. The host still listens only on loopback; no firewall or LAN access is opened. Plugin status is `unavailable` / `transport_not_configured` with an empty action list.
-
-## Tests
-
-Tests cover concurrent single-use pairing, expiry, system-clock changes, incorrect secrets, capacity limits, immutable permissions, action permissions, forbidden file actions, isolated duplicate history, revocation/expiry while queued, revocation during status reads, correlation, timeouts and truthful transport status. No presentation is modified and no real recording or stream is started.
+The Android 15 automated trial installs the APK and exercises its controls through the actual TLS server and PowerPoint/OBS adapters. Controlled test sessions count actions. It covers incorrect certificates, pairing, next/previous, scene switch, status, disconnect, reconnect and revocation. A physical phone trial with Windows, Office, OBS and the actual Wi-Fi network is recorded separately. [Testing](testing.en.md)

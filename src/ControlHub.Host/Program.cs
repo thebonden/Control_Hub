@@ -36,12 +36,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.UnmappedMemberHandling = Wire.Json.UnmappedMemberHandling;
     options.SerializerOptions.MaxDepth = 16;
 });
+var remoteDevices = new RemoteDeviceRegistry();
 var plugins = new IHubPlugin[]
 {
     new PowerPointPlugin(),
     new ObsPlugin(new ObsClient(new Uri(Environment.GetEnvironmentVariable("CONTROLHUB_OBS_URL") ?? "ws://127.0.0.1:4455"),
         Environment.GetEnvironmentVariable("CONTROLHUB_OBS_PASSWORD"))),
-    new AndroidRemotePlugin(),
+    new AndroidRemotePlugin(remoteDevices),
     new PlannedPlugin("audio", new("Lyd", "Audio")),
     new PlannedPlugin("logitech", new("Logitech", "Logitech")),
     new PlannedPlugin("android-live", new("Android Live", "Android Live")),
@@ -76,7 +77,7 @@ app.Use(async (context, next) =>
 app.UseRateLimiter();
 var ownerKey = Environment.GetEnvironmentVariable("CONTROLHUB_OWNER_KEY");
 if (ownerKey is { Length: 64 } && ownerKey.All(char.IsAsciiHexDigit) && !string.Equals(ownerKey, token, StringComparison.OrdinalIgnoreCase))
-    app.MapAndroidRemoteOwner(new RemoteDeviceRegistry(), ownerKey);
+    app.MapAndroidRemoteOwner(remoteDevices, ownerKey);
 app.MapGet("/api/v1/plugins", () => dispatcher.Descriptors).RequireRateLimiting("local");
 app.MapGet("/api/v1/status", (CancellationToken ct) => dispatcher.GetStatusAsync(ct)).RequireRateLimiting("local");
 app.MapPost("/api/v1/commands", async (HttpRequest request, CancellationToken ct) =>
@@ -87,5 +88,14 @@ app.MapPost("/api/v1/commands", async (HttpRequest request, CancellationToken ct
     if (command is null) return Results.BadRequest(new { code = "invalid_command", message = new LocalizedText("Kommando mangler.", "Missing command.") });
     return Results.Json(await dispatcher.DispatchAsync(command, ct), Wire.Json);
 }).RequireRateLimiting("local");
-try { await app.RunAsync(); }
+var phoneAddress = Environment.GetEnvironmentVariable("CONTROLHUB_PHONE_ADDRESS");
+var phonePortText = Environment.GetEnvironmentVariable("CONTROLHUB_PHONE_PORT") ?? "5188";
+if (!int.TryParse(phonePortText, out var phonePort) || phonePort is < 0 or > 65535)
+    throw new InvalidOperationException("Ugyldig telefonport / Invalid phone port.");
+try
+{
+    await using var phoneServer = string.IsNullOrWhiteSpace(phoneAddress) ? null :
+    await PhoneServer.StartAsync(IPAddress.Parse(phoneAddress), phonePort, remoteDevices, dispatcher);
+    await app.RunAsync();
+}
 finally { foreach (var plugin in plugins) await plugin.DisposeAsync(); }

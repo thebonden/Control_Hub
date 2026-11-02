@@ -43,3 +43,23 @@ jobs:
           path: artifacts/windows/files/*
           retention-days: 14
           if-no-files-found: error
+  android:
+    name: Android APK and emulator / APK og emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: bash scripts/android-emulator-ci.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ControlHub-AndroidRemote-0.0.001-development
+          path: ${{ runner.temp }}/controlhub-android/ControlHub-AndroidRemote-0.0.001.apk
+          retention-days: 14
+          if-no-files-found: error

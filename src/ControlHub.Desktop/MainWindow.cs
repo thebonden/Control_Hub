@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using ControlHub.Plugins.AndroidRemote;
 using ControlHub.Plugins.AndroidRemote.Desktop;
 
 namespace ControlHub.Desktop;
@@ -24,6 +26,8 @@ internal sealed class MainWindow : Form
     private readonly Button install = new() { AutoSize = true };
     private readonly Button guide = new() { AutoSize = true };
     private readonly Button phones = new() { AutoSize = true };
+    private readonly CheckBox phoneAccess = new() { AutoSize = true };
+    private readonly ComboBox phoneNetwork = new() { Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
     private bool busy, closing, canClose;
     private bool Danish => language.SelectedIndex != 1;
     private string T(string da, string en) => Danish ? da : en;
@@ -49,6 +53,12 @@ internal sealed class MainWindow : Form
         var settingsButtons = new FlowLayoutPanel { AutoSize = true, WrapContents = true, MaximumSize = new Size(700, 0) };
         settingsButtons.Controls.AddRange([save, copy]);
         layout.Controls.Add(settingsButtons);
+        var networkRow = new FlowLayoutPanel { AutoSize = true };
+        networkRow.Controls.AddRange([phoneAccess, phoneNetwork]);
+        layout.Controls.Add(networkRow);
+        foreach (var address in PhoneEndpoint.LocalAddresses()) phoneNetwork.Items.Add(address);
+        if (phoneNetwork.Items.Count > 0) phoneNetwork.SelectedIndex = 0;
+        phoneAccess.CheckedChanged += (_, _) => UpdateEnabled();
         var hostButtons = new FlowLayoutPanel { AutoSize = true };
         hostButtons.Controls.AddRange([start, stop, refresh]);
         layout.Controls.Add(hostButtons);
@@ -59,7 +69,7 @@ internal sealed class MainWindow : Form
         language.SelectedIndexChanged += (_, _) => { Translate(); ShowStoppedOrRunning(); };
         save.Click += async (_, _) => await RunAsync(() => { SaveSettings(); status.Text = T("Indstillinger gemt.", "Settings saved."); return Task.CompletedTask; });
         copy.Click += async (_, _) => await RunAsync(() => { Clipboard.SetText(settings.Token); status.Text = T("Forbindelsesnøglen er kopieret. Indsæt den i Stream Deck-knappens tokenfelt, og tryk Gem.", "Connection key copied. Paste it into the Stream Deck key's token field, then click Save."); return Task.CompletedTask; });
-        start.Click += async (_, _) => await RunAsync(async () => { SaveSettings(); await host.StartAsync(settings); await ShowStatusAsync(); });
+        start.Click += async (_, _) => await RunAsync(async () => { SaveSettings(); await host.StartAsync(settings, phoneAccess.Checked ? phoneNetwork.SelectedItem as IPAddress : null); await ShowStatusAsync(); });
         stop.Click += async (_, _) => await RunAsync(async () => { await host.StopAsync(); ShowStoppedOrRunning(); });
         refresh.Click += async (_, _) => await RunAsync(ShowStatusAsync);
         phones.Click += (_, _) =>
@@ -104,6 +114,8 @@ internal sealed class MainWindow : Form
         refresh.Text = T("Kontrollér forbindelse", "Check connection");
         install.Text = T("Installér Stream Deck-plugin", "Install Stream Deck plugin");
         guide.Text = T("Åbn installationsvejledning", "Open installation guide");
+        phoneAccess.Text = T("Tillad AndroidRemote på lokalt netværk", "Allow AndroidRemote on local network");
+        phoneNetwork.AccessibleName = T("Netværksadresse til telefon", "Network address for phone");
         phones.Text = T("Administrér telefonadgang", "Manage phone access");
         UpdateEnabled();
     }
@@ -147,6 +159,8 @@ internal sealed class MainWindow : Form
     private void UpdateEnabled()
     {
         var running = host.IsRunning;
+        phoneAccess.Enabled = !busy && !running && phoneNetwork.Items.Count > 0;
+        phoneNetwork.Enabled = phoneAccess.Enabled && phoneAccess.Checked;
         start.Enabled = save.Enabled = obsUrl.Enabled = obsPassword.Enabled = !busy && !running;
         stop.Enabled = refresh.Enabled = phones.Enabled = !busy && running;
         copy.Enabled = install.Enabled = guide.Enabled = language.Enabled = !busy;

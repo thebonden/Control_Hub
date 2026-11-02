@@ -10,6 +10,7 @@ public sealed record RemoteDevice(string Id, string Name, IReadOnlyList<string> 
 // Ordinary classes: ToString must not print secrets as a record would.
 public sealed class PairingOffer(string id, string secret, DateTimeOffset expiresAt)
 {
+    public PhoneEndpoint? Transport { get; init; }
     public string Id { get; } = id;
     public string Secret { get; } = secret;
     public DateTimeOffset ExpiresAt { get; } = expiresAt;
@@ -25,6 +26,16 @@ public sealed class DeviceCredential(RemoteDevice device, string token)
 // Memory only. Restart requires pairing again. No network listener or file access.
 public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
 {
+    private PhoneEndpoint? transport;
+    public bool IsListening { get { lock (sync) return transport is not null; } }
+    public void SetTransport(PhoneEndpoint? endpoint)
+    {
+        lock (sync)
+        {
+            RevokeAll();
+            transport = endpoint;
+        }
+    }
     public static readonly TimeSpan PairingLifetime = TimeSpan.FromMinutes(2);
     public static readonly TimeSpan DeviceLifetime = TimeSpan.FromHours(8);
     public const int MaximumDevices = 16;
@@ -68,7 +79,7 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
             var secret = NewSecret();
             var expiresAt = clock.GetUtcNow() + PairingLifetime;
             pending.Add(id, new Pending(deviceName.Trim(), immutable, Hash(secret), clock.GetTimestamp(), expiresAt));
-            return new(id, secret, expiresAt);
+            return new(id, secret, expiresAt) { Transport = transport };
         }
     }
 
@@ -104,6 +115,15 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
         }
     }
 
+    public bool Authenticates(string deviceId, string token)
+    {
+        lock (sync)
+        {
+            Prune();
+            return devices.TryGetValue(deviceId, out var entry) && Matches(entry.Hash, token);
+        }
+    }
+
     public IReadOnlyList<RemoteDevice> ListDevices()
     {
         lock (sync) { Prune(); return devices.Values.Select(d => d.Device).ToArray(); }
@@ -115,7 +135,7 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
         lock (sync)
         {
             Prune();
-            return new(false, devices.Values.Select(d => d.Device).ToArray(),
+            return new(transport is not null, devices.Values.Select(d => d.Device).ToArray(),
                 pending.Select(p => new PendingPairing(p.Key, p.Value.Name, p.Value.Permissions, p.Value.ExpiresAt)).ToArray());
         }
     }

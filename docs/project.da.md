@@ -25,7 +25,7 @@ Et enkelt dansk/engelsk Windows-kontrolvindue og en brugerinstallation er inklud
 ```mermaid
 flowchart LR
     SD["Stream Deck-plugin"] -->|"HTTP på loopback + token"| H["Control Hub Host"]
-    AR["AndroidRemote · parring/adgang i bibliotek"] -.->|"Fremtidig parret transport"| H
+    AR["AndroidRemote · Android-app"] -->|"Parret HTTPS via telefonserver"| H
     H --> C["Validering og dispatcher"]
     C --> P["PowerPoint-plugin · STA / COM"]
     C --> O["OBS-plugin · WebSocket v5"]
@@ -99,4 +99,4 @@ Alle ændringer går gennem PR til `main`. Versionen angives til brugeren som **
 
 ## AndroidRemote: første kodeetape
 
-Parring og enhedsrettigheder er nu implementeret og testet som bibliotek. Enkeltbrugsbeviser, særskilte nøgler, udløb og tilbagekaldelse beskytter adgangen. Dispatcherens kø genkontrollerer adgang før udførelse; kommando-id’er holdes adskilt pr. parring. Kontrolvinduet har nu **Administrér telefonadgang**, hvor ejeren kan oprette beviser, vælge rettigheder og tilbagekalde adgang. Android-appen og TLS-transporten mangler fortsat. Hosten viser dette som utilgængelig transport og åbner ingen fjernadgang. Se [design og afgrænsning](androidremote.da.md).
+Parring og enhedsrettigheder er nu implementeret og testet som bibliotek. Enkeltbrugsbeviser, særskilte nøgler, udløb og tilbagekaldelse beskytter adgangen. Dispatcherens kø genkontrollerer adgang før udførelse; kommando-id’er holdes adskilt pr. parring. Kontrolvinduet har nu **Administrér telefonadgang**, hvor ejeren kan oprette beviser, vælge rettigheder og tilbagekalde adgang. AndroidRemote til Android 8 og nyere forbinder til en valgfri separat HTTPS-server på den valgte netværksadresse. Appen kan gå frem og tilbage i slideshowet, vælge en navngiven OBS-scene og læse status. Se [design og afgrænsning](androidremote.da.md).

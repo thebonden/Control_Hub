@@ -18,19 +18,21 @@ internal sealed class HostSession : IDisposable
         ? new RemoteOwnerClient(client, new Uri(apiBase + "androidremote/owner/"), ownerKey)
         : throw new InvalidOperationException("Start Control Hub først / Start Control Hub first.");
     private readonly int portNumber;
+    private readonly int phonePort;
     private readonly string apiBase;
     public bool IsRunning => process is { HasExited: false };
 
     // Separat port til pakketest; brugergrænsefladen benytter altid standardporten.
     // Separate port for package tests; the user interface always uses the default.
-    public HostSession(int portNumber = 5187)
+    public HostSession(int portNumber = 5187, int phonePort = 5188)
     {
         if (portNumber is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(portNumber));
         this.portNumber = portNumber;
+        this.phonePort = phonePort;
         apiBase = $"http://127.0.0.1:{portNumber}/api/v1/";
     }
 
-    public async Task StartAsync(Settings settings)
+    public async Task StartAsync(Settings settings, IPAddress? phoneAddress = null)
     {
         settings.Validate();
         if (IsRunning) return;
@@ -54,6 +56,14 @@ internal sealed class HostSession : IDisposable
         ownerKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         start.Environment["CONTROLHUB_OWNER_KEY"] = ownerKey;
         start.Environment["CONTROLHUB_PORT"] = portNumber.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        start.Environment["CONTROLHUB_PHONE_PORT"] = phonePort.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        start.Environment.Remove("CONTROLHUB_PHONE_ADDRESS");
+        if (phoneAddress is not null)
+        {
+            if (!phoneAddress.Equals(IPAddress.Loopback) && !PhoneEndpoint.LocalAddresses().Contains(phoneAddress))
+                throw new InvalidOperationException("Netværket er ikke tilgængeligt / Network is unavailable.");
+            start.Environment["CONTROLHUB_PHONE_ADDRESS"] = phoneAddress.ToString();
+        }
         start.Environment["CONTROLHUB_OBS_URL"] = settings.ObsUrl;
         start.Environment["CONTROLHUB_OBS_PASSWORD"] = settings.ObsPassword;
         start.Environment["CONTROLHUB_DESKTOP_LIFETIME"] = "stdin";

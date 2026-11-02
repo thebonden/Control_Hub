@@ -66,4 +66,6 @@ After adding the AndroidRemote library, 89 C# tests and 27 JavaScript tests pass
 
 ## Phone dialog — 2 November 2026
 
+The Android APK was subsequently installed on an Android 15 test emulator. The test rejected an altered certificate fingerprint and then used the same invitation with the correct fingerprint. Next and Previous produced two navigations in total. One scene-button press produced one OBS switch. Status recovered after a network interruption with the original slide and selected scene. Counts did not increase after reconnecting or revoking access. The phone reloaded its encrypted session between trials. PowerPoint and OBS adapters used controlled test sessions.
+
 The host smoke test creates, lists and cancels test invitations and checks the capacity limit. Missing owner proof, the Stream Deck key alone, Origin requests and invalid fields are rejected. The listing contains no secrets or tokens. The packaged desktop client has a separate create/read/cancel check. The actual Windows dialog was visually checked in both languages with simulated devices, including Danish creation of a read-only invitation. No phone was used.

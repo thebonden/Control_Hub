@@ -90,7 +90,7 @@ OBS-afbrydelse eller et ugyldigt svar efter påbegyndt afsendelse giver `outcome
 
 ## AndroidRemote-bibliotek
 
-AndroidRemote annoncerer nu modenhed `development`, tom handlingsliste og `unavailable` med `data.reason = transport_not_configured`. Telefontransporten har ingen HTTP-ruter endnu. Lokale ejerruter er beskrevet nedenfor. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).
+AndroidRemote viser `ready` når telefonserveren lytter, ellers `unavailable` med `data.reason = transport_not_configured`. Telefonens TLS-server på port 5188 har POST `/phone/v1/pair`, GET `/phone/v1/status` og POST `/phone/v1/commands`. Parring tager `id` og `secret` som JSON og returnerer `device` og `token`. Status og kommandoer kræver `X-ControlHub-Device` og enhedens bearer-nøgle. Lokale ejerruter er beskrevet nedenfor. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).
 
 ## Lokal administration af AndroidRemote
 
@@ -98,7 +98,7 @@ Under `/api/v1/androidremote/owner/` kræver alle kald den almindelige bearer-n�
 
 | Metode og relativ sti | Resultat |
 |---|---|
-| GET (rod) | `transportReady: false`, `devices` og `pendingPairings`; ingen hemmeligheder |
+| GET (rod) | `transportReady`, `devices` og `pendingPairings`; ingen hemmeligheder |
 | POST pairings | `{"name":"Min telefon","permissions":["status.read"]}`. 201: id, bevis og udløb. Beviset kan ikke genlæses via listen. |
 | DELETE pairings/{id} | Annullerer bevis; 204 eller 404 hvis allerede væk |
 | DELETE devices/{id} | Tilbagekalder enhedens adgang; 204 eller 404 |

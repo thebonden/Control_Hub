@@ -90,7 +90,7 @@ An OBS disconnect or invalid reply after starting request transmission produces 
 
 ## AndroidRemote library
 
-AndroidRemote now advertises `development` maturity, no actions and `unavailable` with `data.reason = transport_not_configured`. The phone transport has no HTTP routes yet. Local owner routes are described below. Internally it uses protocol v1 and may return `access_denied` before allowing plugin actions or cached results. Revocation is rechecked after the command queue; responses preserve the client command ID. See [pairing and access](androidremote.en.md).
+AndroidRemote reports `ready` while the phone server is listening, otherwise `unavailable` with `data.reason = transport_not_configured`. The phone TLS server on port 5188 provides POST `/phone/v1/pair`, GET `/phone/v1/status` and POST `/phone/v1/commands`. Pairing takes `id` and `secret` as JSON and returns `device` and `token`. Status and commands require `X-ControlHub-Device` and the device bearer token. Local owner routes are described below. Internally it uses protocol v1 and may return `access_denied` before allowing plugin actions or cached results. Revocation is rechecked after the command queue; responses preserve the client command ID. See [pairing and access](androidremote.en.md).
 
 ## Local AndroidRemote administration
 
@@ -98,7 +98,7 @@ All routes under `/api/v1/androidremote/owner/` require the normal bearer key **
 
 | Method and relative path | Result |
 |---|---|
-| GET (root) | `transportReady: false`, `devices` and `pendingPairings`; no secrets |
+| GET (root) | `transportReady`, `devices` and `pendingPairings`; no secrets |
 | POST pairings | `{"name":"My phone","permissions":["status.read"]}`. 201: ID, secret and expiry. The list cannot retrieve the secret. |
 | DELETE pairings/{id} | Cancel invitation; 204 or 404 if already gone |
 | DELETE devices/{id} | Revoke device access; 204 or 404 |
