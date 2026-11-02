@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.vs/
+TestResults/
+artifacts/
+.env
+*.user
+*.streamDeckPlugin
+*.apk
+*.p12
+*.jks
+*.controlhub
+__pycache__/

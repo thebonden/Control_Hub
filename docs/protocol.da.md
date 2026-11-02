@@ -1,0 +1,107 @@
+# Kommando- og statusprotokol v1
+
+[English](protocol.en.md)
+
+Transport: lokal HTTP/JSON på `127.0.0.1:5187`. Alle kald kræver `Authorization: Bearer <lokalt-token>`. Ingen CORS, fjernadgang eller broadcast-discovery.
+
+## Endpoints
+
+| Metode og sti | Indhold |
+|---|---|
+| GET /api/v1/plugins | Registrerede C#-plugins med id, navn, modenhed og handlinger |
+| GET /api/v1/status | Protokolversion, produktversion, observationstid i UTC og pluginstatus |
+| POST /api/v1/commands | Én eksplicit kommando; returnerer et korreleret resultat |
+
+Stream Deck er en ekstern klient og står derfor ikke i C#-pluginkataloget. Planlagte plugins annoncerer tomme handlingslister og `not_implemented`.
+
+## Kommando
+
+```json
+{
+  "protocolVersion": "1",
+  "id": "73c876dd-9f55-4e02-b314-dad15a6ac386",
+  "plugin": "obs",
+  "action": "scene.switch",
+  "arguments": { "sceneName": "Camera" }
+}
+```
+
+Id skal være UUID i D-format. Feltnavne bruger camelCase. Plugin- og handlingsnavne er case-sensitive. Argumenter er altid et objekt; ukendte og gentagne argumentfelter afvises. Ukendte felter i konvolutten afvises. Grænser: 16 KiB request-body og JSON-dybde 16.
+
+| Plugin | Handling | Argumenter |
+|---|---|---|
+| powerpoint | next, previous, black, resume | {} |
+| powerpoint | goto | {"slide": 3} — positivt heltal inden for præsentationen |
+| obs | scene.switch | {"sceneName": "Camera"} |
+| obs | record.start, record.stop, stream.start, stream.stop | {} |
+| obs | input.mute | {"inputName": "Mic", "muted": true} |
+
+Navne på scener og lydkilder skal være ikke-tomme strenge på højst 256 tegn. Ingen filstier, generelle COM-kald eller vilkårlige OBS-requesttyper accepteres.
+
+## Resultat
+
+```json
+{
+  "protocolVersion": "1",
+  "id": "73c876dd-9f55-4e02-b314-dad15a6ac386",
+  "plugin": "obs",
+  "success": true,
+  "code": "ok",
+  "message": {
+    "da": "OBS bekræftede handlingen.",
+    "en": "OBS acknowledged the action."
+  },
+  "data": null
+}
+```
+
+Et læsbart kommandosvar returneres som HTTP 200, også når `success` er false. Klienten skal kontrollere version, id og success, ikke alene HTTP-status. Dårlig JSON giver 400; adgang giver 401/403; bodygrænse giver 413; kapacitetsgrænse giver 429. Transportfejl kan mangle JSON-body.
+
+Fejlkoder: `unsupported_protocol`, `invalid_command`, `unknown_plugin`, `unsupported_action`, `invalid_arguments`, `id_conflict`, `cancelled_before_dispatch`, `outcome_unknown`, `plugin_error`, `unsupported_platform`, `slideshow_unavailable`, `obs_rejected`.
+
+## Dubletter og timeout
+
+De seneste 1.024 afsendte UUID'er gemmes i hukommelsen. Identisk genafsendelse returnerer samme resultat. Ændret indhold giver id_conflict. Fingeraftrykket afhænger også af argumenternes JSON-repræsentation og rækkefølge; behold derfor den oprindelige konvolut ved et kontrolleret status-/retryforløb.
+
+Kommandoer har et samlet deadline-budget på 10 sekunder inklusive ventetid i dispatcher-køen. Annullering før dispatcheradgang giver cancelled_before_dispatch. Annullering under adapterarbejdet giver outcome_unknown. Adaptere skal respektere cancellation; allerede påbegyndte COM-kald kan fortsætte. Fejlresultater gemmes også for at undgå utilsigtet genudførelse.
+
+Historikken er hverken permanent eller en sikkerhedsgrænse mod genafspilning. Ingen automatisk kommando-retry efter timeout, genstart eller netværksfejl. OBS har sin egen requestId pr. WebSocket-forespørgsel.
+
+## Status
+
+Status indeholder `protocolVersion`, `version`, `observedAt` og `plugins`. Hvert plugin har `id`, `state`, tosproget `message` og eventuelt `data`.
+
+- PowerPoint ready-data: `position`, `slideCount`, `state` (PowerPoints numeriske visningstilstand).
+- OBS ready-data: `scene`, `recording`, `streaming`, med de relevante OBS-responseData-objekter.
+- Tilstande: `ready`, `unavailable`, `unsupported`, `not_implemented`.
+
+Hvert plugins statusopslag har et budget på 10 sekunder. Status samles sekventielt, og observedAt markerer slutningen af indsamlingen; det er ikke en atomisk måling. Manglende eller utilgængelig status må aldrig fortolkes som stoppet optagelse eller stoppet udsendelse.
+
+## Konkrete forbindelsesfejl
+
+Ved kendte fejl indeholder status og kommandosvar `data.reason`. Felterne er valgfrie og ændrer ikke protokolversion 1. Klienter skal have en generel tekst som fallback ved ukendte årsager.
+
+| Plugin | Årsager |
+|---|---|
+| PowerPoint | `powerpoint_not_found`, `no_slideshow`, `multiple_slideshows`, `powerpoint_unavailable` |
+| OBS | `connection_unavailable`, `password_missing`, `authentication_failed`, `protocol_error`, `connection_lost`, `request_rejected` |
+
+OBS-afbrydelse eller et ugyldigt svar efter påbegyndt afsendelse giver `outcome_unknown`; en udtrykkelig afvisning fra OBS giver `obs_rejected`. Ingen automatisk genafsendelse. Status forbliver `unavailable`, når årsagen kendes; det må ikke fortolkes som stoppet optagelse/udsendelse. Faste dansk/engelske tekster indeholder aldrig rå serverfejl, adgangskoder eller fejlkommentarer fra OBS. WebSocket-lukkekode 4009 identificerer afvist godkendelse ifølge den officielle OBS-protokol.
+
+## AndroidRemote-bibliotek
+
+AndroidRemote viser `ready` når telefonserveren lytter, ellers `unavailable` med `data.reason = transport_not_configured`. Telefonens TLS-server på port 5188 har POST `/phone/v1/pair`, GET `/phone/v1/status` og POST `/phone/v1/commands`. Parring tager `id` og `secret` som JSON og returnerer `device` og `token`. Status og kommandoer kræver `X-ControlHub-Device` og enhedens bearer-nøgle. Lokale ejerruter er beskrevet nedenfor. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).
+
+## Lokal administration af AndroidRemote
+
+Under `/api/v1/androidremote/owner/` kræver alle kald den almindelige bearer-nøgle **og** `X-ControlHub-Owner`. Kontrolvinduet opretter 32 tilfældige bytes som en separat hexnøgle ved hver hoststart. Den gemmes ikke i indstillinger, knapper eller udklipsholder. Ved start uden en særskilt gyldig `CONTROLHUB_OWNER_KEY` registreres ejerruterne ikke. Browser-Origin afvises; ejerruter accepterer kun loopback-klienter. En legitim proces under samme Windows-bruger er ikke isoleret fra andre processer med tilsvarende adgang.
+
+| Metode og relativ sti | Resultat |
+|---|---|
+| GET (rod) | `transportReady`, `devices` og `pendingPairings`; ingen hemmeligheder |
+| POST pairings | `{"name":"Min telefon","permissions":["status.read"]}`. 201: id, bevis og udløb. Beviset kan ikke genlæses via listen. |
+| DELETE pairings/{id} | Annullerer bevis; 204 eller 404 hvis allerede væk |
+| DELETE devices/{id} | Tilbagekalder enhedens adgang; 204 eller 404 |
+| DELETE access | Fjerner alle beviser og enheder; 204 |
+
+Ugyldige/ukendte/dublerede felter eller rettigheder giver 400; kapacitetsgrænsen giver 409. Manglende almindelig nøgle giver 401; forkert ejernøgle giver 403. Ejersvar må ikke caches. Ved afbrudt oprettelse kan et bevis allerede eksistere: opdater listen og annuller det om nødvendigt. Gentag ikke automatisk. Ingen af ruterne indløser et bevis eller udfører en produktionskommando.

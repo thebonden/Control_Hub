@@ -1,0 +1,232 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Control Hub",
+  "Version": "0.0.1.0",
+  "Author": "thebonden",
+  "Description": "Styr PowerPoint og OBS via Control Hub / Control PowerPoint and OBS through Control Hub.",
+  "UUID": "dk.thebonden.controlhub",
+  "SDKVersion": 2,
+  "CodePath": "plugin.js",
+  "Nodejs": {
+    "Version": "24"
+  },
+  "Software": {
+    "MinimumVersion": "7.4"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Icon": "assets/plugin",
+  "Category": "Control Hub",
+  "CategoryIcon": "assets/action",
+  "PropertyInspectorPath": "inspector.html",
+  "Actions": [
+    {
+      "UUID": "dk.thebonden.controlhub.next",
+      "Name": "Næste slide / Next slide",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Næste slide",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Næste slide / Next slide"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.previous",
+      "Name": "Forrige slide / Previous slide",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Forrige slide",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Forrige slide / Previous slide"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.goto",
+      "Name": "Gå til slide / Go to slide",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Gå til slide",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Gå til slide / Go to slide"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.black",
+      "Name": "Sort skærm / Black screen",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Sort skærm",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Sort skærm / Black screen"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.resume",
+      "Name": "Vis slideshow / Resume slideshow",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Vis slideshow",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Vis slideshow / Resume slideshow"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.scene",
+      "Name": "Skift scene / Switch scene",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Skift scene",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Skift scene / Switch scene"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.recordstart",
+      "Name": "Start optagelse / Start recording",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Start optagelse",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Start optagelse / Start recording"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.recordstop",
+      "Name": "Stop optagelse / Stop recording",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Stop optagelse",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Stop optagelse / Stop recording"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.streamstart",
+      "Name": "Start udsendelse / Start streaming",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Start udsendelse",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Start udsendelse / Start streaming"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.streamstop",
+      "Name": "Stop udsendelse / Stop streaming",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Stop udsendelse",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Stop udsendelse / Stop streaming"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.mute",
+      "Name": "Lyd fra/til / Set input mute",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Lyd fra/til",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Lyd fra/til / Set input mute"
+    },
+    {
+      "UUID": "dk.thebonden.controlhub.status",
+      "Name": "Status / Status",
+      "Icon": "assets/action",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "States": [
+        {
+          "Image": "assets/key",
+          "Title": "Status",
+          "FontSize": 11
+        }
+      ],
+      "Tooltip": "Status / Status"
+    }
+  ]
+}

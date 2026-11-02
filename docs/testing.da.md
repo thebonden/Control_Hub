@@ -1,0 +1,71 @@
+# Testplan og accept
+
+[English](testing.en.md)
+
+## Automatiske kontroller
+
+- Windows-pakketest: inkluderet runtime, DPAPI-konfiguration, ødelagt konfiguration, lokal adressevalidering, start af den pakkede host, autentificeret status, optaget port og stop via lukket inputforbindelse. Kør `scripts/verify-package.ps1` efter pakning; den afprøver ikke fysisk styring.
+
+- Release-build af alle C#-projekter med advarsler som fejl.
+- Routing, UUID, protokolversion, ukendte handlinger og ugyldige argumenter.
+- Parallelle dubletter udføres én gang inden for cachevinduet; konflikt-id'er afvises.
+- Timeout og annullering skelner mellem ikke afsendt og ukendt udfald.
+- PowerPoint-adapterens kald afprøves mod en falsk session. Åbning, gemning, redigering og lukning er ikke handlinger.
+- OBS testes mod en lokal simuleret WebSocket-server: håndtryk, password challenge, fragmenterede svar, mellemliggende events, requestfejl og forkert korrelation.
+- Elgatos officielle CLI 1.10.3 validerer pluginmanifest og aktiver, herunder hovedikonets PNG-format. Validering er ikke en fysisk installationstest.
+- Forbindelsestesten kontrolleres for kun at sende GET-status og aldrig gemme eller sende tokenet tilbage i et svar. UI-tests dækker korrelation, sprog, timeout og ændring af token under et kald.
+- Forsinket succes eller fejl må ikke vises på en nykonfigureret knap eller en genbrugt kontekst.
+- Stream Deck testes med simuleret HTTP: knaptryk, argumentmapping, overlap, fejlfeedback, manglende token og status.
+- Host-smoketest: adgang, Origin-afvisning, ugyldig JSON, version, handlinger og utilgængelige integrationer.
+- Kildekoderegler: ingen præsentationsfiler, ingen kendte filskrivnings- eller fokusoperationer i PowerPoint-adapteren.
+
+CI kører på Windows og Linux. Testene ændrer ikke præsentationsfiler og sender ikke produktionskommandoer til brugerens OBS. En grøn CI-kørsel beviser ikke, at COM, Stream Deck-installation og den konkrete hardware er afprøvet.
+
+## Fysisk accept — endnu ikke gennemført
+
+| Trin | Forventet resultat |
+|---|---|
+| Installér kildepluginet i Stream Deck | Alle 12 handlinger vises; begge sprog kan vælges |
+| Start host med forkert/manglende token i knappen | Ingen handling; tydelig fejl |
+| Start ét slideshow og en testopsætning i OBS | Status viser korrekt position og outputtilstand |
+| Flyt fokus til et andet program | Næste/forrige og OBS-scenevalg virker stadig |
+| Næste/forrige med animationer | PowerPoints native adfærd, én handling pr. bevidst tryk |
+| Gå til gyldig/ugyldig slide | Gyldig navigation; ugyldig afvises uden ændring |
+| Sort skærm og genoptag | Kun slideshowvisning ændres |
+| Første/sidste slide og brugerdefineret show | Adfærd dokumenteret og accepteret |
+| To slideshowvinduer | Adapteren afviser tvetydig styring |
+| Forkert OBS-adgangskode eller scenenavn | Ingen falsk succes; brugbar fejlfeedback |
+| Start/stop testoptagelse og mute/unmute | OBS bekræfter den ønskede tilstand |
+| Start/stop udsendelse til godkendt testdestination | Kun ved eksplicit, aftalt live-test |
+| Luk/genstart OBS eller PowerPoint | Status bliver utilgængelig og kan genfindes; ingen automatisk genafspilning |
+| Afbryd under kommando | Ukendt udfald behandles ved statuskontrol |
+| Sammenlign præsentationsfilens SHA-256 før/efter | Identisk filindhold |
+| Stop host | PowerPoint og OBS forbliver åbne |
+
+Beregn filhash med `Get-FileHash -Algorithm SHA256 -LiteralPath '<eksisterende fil>'` før og efter. Testen må ikke gemme præsentationen eller bruge redigering som del af testen. Brug ikke produktionsudsendelser til en uvarslet test.
+
+## Registrering
+
+For hvert testforløb registreres dato, Windows/Office/OBS/Stream Deck-versioner, hardwaremodel, plugincommit, testtrin, forventet og faktisk resultat, filhash og operatørens godkendelse. Del ikke tokens, OBS-password eller streamingnøgler.
+
+0.0.001 kan først betegnes hardwareverificeret, når denne protokol er gennemført og resultaterne er vedlagt. 0.1.000 kræver derudover ejerens godkendelse af det fulde scope og dokumentation fra det aktive miljø.
+
+## Lokal integrationsstatus — opdateret 1. november 2026
+
+Den 31. oktober blev den rettede forbindelsesdialog afprøvet i det installerede Stream Deck-plugin: Control Hub, PowerPoint og OBS svarede. Statusknappen viste slide 1 og stoppet optagelse/udsendelse.
+
+En praktisk prøve sendte simulerede knaptryk gennem pluginets produktionskode til den åbne lokale Control Hub 0.0.001-testudgave, PowerPoint COM og OBS 33.0.1. Næste/forrige, gå til slide, ugyldig slide, sort skærm/genoptag og OBS-scenevalg bestod. Slide 1 og den oprindelige scene blev gendannet. Præsentationsfilens SHA-256 var uændret. Ingen optagelse eller udsendelse blev startet. Prøven brugte det allerede åbne kontrolvindue fra package-001-b; installationstestene af den nye pakke er separate.
+
+Ejeren bekræftede derefter, at den fysiske Næste-knap på Stream Deck XL skifter slide. Den efterfølgende COM-aflæsning fandt ikke præcis ét aktivt slideshow, så det konkrete slidenummer er ikke uafhængigt verificeret. Profile 2 har Status, Næste, Forrige, OBS SORT og OBS PPT. Fysiske tryk på de øvrige knapper samt optagelse, udsendelse, mute, animationer og fuld hardwareaccept er endnu ikke bekræftet.
+
+Den 1. november består 51 C#-tests og 27 JavaScript-tests efter tilføjelse af konkrete forbindelsesårsager. Tests dækker manglende og afvist OBS-adgangskode, lukket port, ugyldigt håndtryk, afbrydelse efter afsendelse, PowerPoint-fejlårsager og sikker tosproget statusvisning. Den simulerede OBS-server bruges til fejlprøver; brugerens serverindstillinger ændres ikke af testene.
+
+## AndroidRemote-kodeetape — 1. november 2026
+
+Efter AndroidRemote-biblioteket består 89 C#-tests og 27 JavaScript-tests. De 38 nye testtilfælde omfatter samtidig enkeltbrugsparring, udløb, forkert nøgle, rettigheder, enhedsgrænser, tilbagekaldelse under kø/statuslæsning, adskilt dublethistorik og ukendt udfald uden automatisk replay. Host-smoketesten består på en separat lokal port, mens den normale Control Hub kører. Build: nul advarsler/fejl. Dette er bibliotekstest med simulerede enheder, ikke Android-hardwaretest.
+
+## Telefonvindue — 2. november 2026
+
+Android-APK'en blev efterfølgende installeret på en Android 15-testemulator. Testen afviste et ændret certifikataftryk og brugte derefter samme bevis med det rigtige aftryk. Næste og Forrige gav to navigationer i alt. Ét tryk på sceneknappen gav ét OBS-skift. Efter netværksafbrydelse kom status tilbage med den oprindelige slide og valgte scene. Tællerne steg ikke ved genforbindelse eller tilbagekaldelse. Telefonen genlæste sin krypterede session mellem prøveforløbene. PowerPoint- og OBS-adapterne brugte kontrollerede testsessioner.
+
+Servertesten opretter, viser og annullerer testbeviser og kontrollerer kapacitetsgrænsen. Manglende ejernøgle, kun Stream Deck-nøglen, Origin-kald og ugyldige felter afvises. Beviser og nøgler er ikke i oversigten. Den pakkede desktopklient har en separat test af opret/læs/annuller. Det faktiske Windows-vindue blev kontrolleret visuelt på begge sprog med simulerede enheder, inklusive dansk oprettelse af et bevis med kun læseadgang. Der blev ikke anvendt en telefon.

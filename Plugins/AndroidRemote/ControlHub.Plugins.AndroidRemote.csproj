@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Remove="Host/**/*.cs;Desktop/**/*.cs" />
+    <ProjectReference Include="../../src/ControlHub.Core/ControlHub.Core.csproj" />
+  </ItemGroup>
+</Project>

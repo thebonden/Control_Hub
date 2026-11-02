@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Plugins/AndroidRemote/Host/ControlHub.Plugins.AndroidRemote.Host.csproj" />
+    <ProjectReference Include="../../Plugins/PowerPoint/ControlHub.Plugins.PowerPoint.csproj" />
+    <ProjectReference Include="../../Plugins/Obs/ControlHub.Plugins.Obs.csproj" />
+  </ItemGroup>
+</Project>
