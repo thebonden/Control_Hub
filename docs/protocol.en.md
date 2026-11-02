@@ -90,4 +90,18 @@ An OBS disconnect or invalid reply after starting request transmission produces 
 
 ## AndroidRemote library
 
-AndroidRemote now advertises `development` maturity, no actions and `unavailable` with `data.reason = transport_not_configured`. The library has no HTTP routes yet. Internally it uses protocol v1 and may return `access_denied` before allowing plugin actions or cached results. Revocation is rechecked after the command queue; responses preserve the client command ID. See [pairing and access](androidremote.en.md).
+AndroidRemote now advertises `development` maturity, no actions and `unavailable` with `data.reason = transport_not_configured`. The phone transport has no HTTP routes yet. Local owner routes are described below. Internally it uses protocol v1 and may return `access_denied` before allowing plugin actions or cached results. Revocation is rechecked after the command queue; responses preserve the client command ID. See [pairing and access](androidremote.en.md).
+
+## Local AndroidRemote administration
+
+All routes under `/api/v1/androidremote/owner/` require the normal bearer key **and** `X-ControlHub-Owner`. The control window generates a separate 32-byte random hex key for each host launch. It is not saved in settings, keys or the clipboard. Without a distinct valid `CONTROLHUB_OWNER_KEY`, the host does not register owner routes. Browser Origin is rejected; owner routes accept loopback clients only. Processes running with equivalent access under the same Windows user are not isolated from one another.
+
+| Method and relative path | Result |
+|---|---|
+| GET (root) | `transportReady: false`, `devices` and `pendingPairings`; no secrets |
+| POST pairings | `{"name":"My phone","permissions":["status.read"]}`. 201: ID, secret and expiry. The list cannot retrieve the secret. |
+| DELETE pairings/{id} | Cancel invitation; 204 or 404 if already gone |
+| DELETE devices/{id} | Revoke device access; 204 or 404 |
+| DELETE access | Remove all invitations and devices; 204 |
+
+Invalid, unknown or duplicate fields/permissions return 400; capacity returns 409. Missing the regular key returns 401; an incorrect owner key returns 403. Owner responses must not be cached. After an interrupted creation request an invitation may already exist: refresh and cancel it if needed. Do not automatically retry. None of these routes redeem invitations or execute production commands.

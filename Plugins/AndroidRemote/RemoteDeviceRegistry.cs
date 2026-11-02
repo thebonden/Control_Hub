@@ -35,12 +35,13 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
     private readonly Dictionary<string, Pending> pending = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Paired> devices = new(StringComparer.Ordinal);
 
-    private sealed class Pending(string name, IReadOnlyList<string> permissions, byte[] hash, long created)
+    private sealed class Pending(string name, IReadOnlyList<string> permissions, byte[] hash, long created, DateTimeOffset expiresAt)
     {
         public string Name { get; } = name;
         public IReadOnlyList<string> Permissions { get; } = permissions;
         public byte[] Hash { get; } = hash;
         public long Created { get; } = created;
+        public DateTimeOffset ExpiresAt { get; } = expiresAt;
         public int Attempts { get; set; }
     }
     private sealed record Paired(RemoteDevice Device, byte[] Hash, long Created);
@@ -65,8 +66,9 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
                 throw new InvalidOperationException("Enhedsgrænsen er nået / Device limit reached.");
             var id = Guid.NewGuid().ToString("D");
             var secret = NewSecret();
-            pending.Add(id, new Pending(deviceName.Trim(), immutable, Hash(secret), clock.GetTimestamp()));
-            return new(id, secret, clock.GetUtcNow() + PairingLifetime);
+            var expiresAt = clock.GetUtcNow() + PairingLifetime;
+            pending.Add(id, new Pending(deviceName.Trim(), immutable, Hash(secret), clock.GetTimestamp(), expiresAt));
+            return new(id, secret, expiresAt);
         }
     }
 
@@ -108,6 +110,15 @@ public sealed class RemoteDeviceRegistry(TimeProvider? timeProvider = null)
     }
 
     public int PendingCount { get { lock (sync) { Prune(); return pending.Count; } } }
+    public RemoteOwnerSnapshot GetOwnerSnapshot()
+    {
+        lock (sync)
+        {
+            Prune();
+            return new(false, devices.Values.Select(d => d.Device).ToArray(),
+                pending.Select(p => new PendingPairing(p.Key, p.Value.Name, p.Value.Permissions, p.Value.ExpiresAt)).ToArray());
+        }
+    }
     public bool CancelPairing(string pairingId) { lock (sync) return RemovePending(pairingId); }
     public bool RevokeDevice(string deviceId) { lock (sync) return RemoveDevice(deviceId); }
     public void RevokeAll()

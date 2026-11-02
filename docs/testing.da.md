@@ -63,3 +63,7 @@ Den 1. november består 51 C#-tests og 27 JavaScript-tests efter tilføjelse af 
 ## AndroidRemote-kodeetape — 1. november 2026
 
 Efter AndroidRemote-biblioteket består 89 C#-tests og 27 JavaScript-tests. De 38 nye testtilfælde omfatter samtidig enkeltbrugsparring, udløb, forkert nøgle, rettigheder, enhedsgrænser, tilbagekaldelse under kø/statuslæsning, adskilt dublethistorik og ukendt udfald uden automatisk replay. Host-smoketesten består på en separat lokal port, mens den normale Control Hub kører. Build: nul advarsler/fejl. Dette er bibliotekstest med simulerede enheder, ikke Android-hardwaretest.
+
+## Telefonvindue — 2. november 2026
+
+Servertesten opretter, viser og annullerer testbeviser og kontrollerer kapacitetsgrænsen. Manglende ejernøgle, kun Stream Deck-nøglen, Origin-kald og ugyldige felter afvises. Beviser og nøgler er ikke i oversigten. Den pakkede desktopklient har en separat test af opret/læs/annuller. Det faktiske Windows-vindue blev kontrolleret visuelt på begge sprog med simulerede enheder, inklusive dansk oprettelse af et bevis med kun læseadgang. Der blev ikke anvendt en telefon.

@@ -6,6 +6,7 @@ using System.Threading.RateLimiting;
 using ControlHub.Contracts;
 using ControlHub.Core;
 using ControlHub.Plugins.AndroidRemote;
+using ControlHub.Plugins.AndroidRemote.Host;
 using ControlHub.Plugins.Obs;
 using ControlHub.Plugins.Planned;
 using ControlHub.Plugins.PowerPoint;
@@ -73,6 +74,9 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseRateLimiter();
+var ownerKey = Environment.GetEnvironmentVariable("CONTROLHUB_OWNER_KEY");
+if (ownerKey is { Length: 64 } && ownerKey.All(char.IsAsciiHexDigit) && !string.Equals(ownerKey, token, StringComparison.OrdinalIgnoreCase))
+    app.MapAndroidRemoteOwner(new RemoteDeviceRegistry(), ownerKey);
 app.MapGet("/api/v1/plugins", () => dispatcher.Descriptors).RequireRateLimiting("local");
 app.MapGet("/api/v1/status", (CancellationToken ct) => dispatcher.GetStatusAsync(ct)).RequireRateLimiting("local");
 app.MapPost("/api/v1/commands", async (HttpRequest request, CancellationToken ct) =>

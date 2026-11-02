@@ -2,8 +2,9 @@ const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
 const { randomBytes, randomUUID } = require("node:crypto");
 const token = randomBytes(32).toString("hex");
+const ownerKey = randomBytes(32).toString("hex");
 const child = spawn("dotnet", ["src/ControlHub.Host/bin/Release/net10.0/ControlHub.Host.dll"],
-  { env: { ...process.env, CONTROLHUB_TOKEN: token, CONTROLHUB_PORT: "0", CONTROLHUB_OBS_URL: "ws://127.0.0.1:1" }, stdio: ["ignore", "pipe", "pipe"] });
+  { env: { ...process.env, CONTROLHUB_TOKEN: token, CONTROLHUB_OWNER_KEY: ownerKey, CONTROLHUB_PORT: "0", CONTROLHUB_OBS_URL: "ws://127.0.0.1:1" }, stdio: ["ignore", "pipe", "pipe"] });
 let log = "";
 let base;
 child.stdout.on("data", d => {
@@ -28,6 +29,7 @@ const post = body => fetch(base + "commands", {method:"POST",headers,body:JSON.s
     const catalog = await (await fetch(base+"plugins",{headers})).json();
     assert.ok(catalog.some(p=>p.id==="powerpoint"));
     assert.ok(catalog.some(p=>p.id==="obs"));
+    await require('./remote-owner-smoke.cjs')(base, token, ownerKey);
     assert.equal((await fetch(base+"commands",{method:"POST",headers,body:"{"})).status,400);
     assert.equal((await fetch(base+"commands",{method:"POST",headers,body:"null"})).status,400);
     const command={protocolVersion:"1",id:randomUUID(),plugin:"powerpoint",action:"save",arguments:{}};

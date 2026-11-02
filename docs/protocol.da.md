@@ -90,4 +90,18 @@ OBS-afbrydelse eller et ugyldigt svar efter påbegyndt afsendelse giver `outcome
 
 ## AndroidRemote-bibliotek
 
-AndroidRemote annoncerer nu modenhed `development`, tom handlingsliste og `unavailable` med `data.reason = transport_not_configured`. Biblioteket har ingen HTTP-ruter endnu. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).
+AndroidRemote annoncerer nu modenhed `development`, tom handlingsliste og `unavailable` med `data.reason = transport_not_configured`. Telefontransporten har ingen HTTP-ruter endnu. Lokale ejerruter er beskrevet nedenfor. Internt bruger det protokol v1 og kan afvise med `access_denied`, før pluginhandlinger eller cachesvar frigives. Tilbagekaldelse kontrolleres igen efter kommandokøen; klientens kommando-id bevares i svaret. Se [parring og adgang](androidremote.da.md).
+
+## Lokal administration af AndroidRemote
+
+Under `/api/v1/androidremote/owner/` kræver alle kald den almindelige bearer-nøgle **og** `X-ControlHub-Owner`. Kontrolvinduet opretter 32 tilfældige bytes som en separat hexnøgle ved hver hoststart. Den gemmes ikke i indstillinger, knapper eller udklipsholder. Ved start uden en særskilt gyldig `CONTROLHUB_OWNER_KEY` registreres ejerruterne ikke. Browser-Origin afvises; ejerruter accepterer kun loopback-klienter. En legitim proces under samme Windows-bruger er ikke isoleret fra andre processer med tilsvarende adgang.
+
+| Metode og relativ sti | Resultat |
+|---|---|
+| GET (rod) | `transportReady: false`, `devices` og `pendingPairings`; ingen hemmeligheder |
+| POST pairings | `{"name":"Min telefon","permissions":["status.read"]}`. 201: id, bevis og udløb. Beviset kan ikke genlæses via listen. |
+| DELETE pairings/{id} | Annullerer bevis; 204 eller 404 hvis allerede væk |
+| DELETE devices/{id} | Tilbagekalder enhedens adgang; 204 eller 404 |
+| DELETE access | Fjerner alle beviser og enheder; 204 |
+
+Ugyldige/ukendte/dublerede felter eller rettigheder giver 400; kapacitetsgrænsen giver 409. Manglende almindelig nøgle giver 401; forkert ejernøgle giver 403. Ejersvar må ikke caches. Ved afbrudt oprettelse kan et bevis allerede eksistere: opdater listen og annuller det om nødvendigt. Gentag ikke automatisk. Ingen af ruterne indløser et bevis eller udfører en produktionskommando.

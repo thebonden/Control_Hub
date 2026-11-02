@@ -63,3 +63,7 @@ On 1 November, 51 C# tests and 27 JavaScript tests pass after adding specific co
 ## AndroidRemote implementation stage — 1 November 2026
 
 After adding the AndroidRemote library, 89 C# tests and 27 JavaScript tests pass. The 38 new cases cover concurrent single-use pairing, expiry, wrong tokens, permissions, device limits, revocation during queueing/status reads, isolated duplicate history and unknown outcomes without automatic replay. Host smoke tests pass on a separate local port while the regular Control Hub runs. Build: zero warnings/errors. These are library tests with simulated devices, not Android hardware tests.
+
+## Phone dialog — 2 November 2026
+
+The host smoke test creates, lists and cancels test invitations and checks the capacity limit. Missing owner proof, the Stream Deck key alone, Origin requests and invalid fields are rejected. The listing contains no secrets or tokens. The packaged desktop client has a separate create/read/cancel check. The actual Windows dialog was visually checked in both languages with simulated devices, including Danish creation of a read-only invitation. No phone was used.

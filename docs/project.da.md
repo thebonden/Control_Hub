@@ -99,4 +99,4 @@ Alle ændringer går gennem PR til `main`. Versionen angives til brugeren som **
 
 ## AndroidRemote: første kodeetape
 
-Parring og enhedsrettigheder er nu implementeret og testet som bibliotek. Enkeltbrugsbeviser, særskilte nøgler, udløb og tilbagekaldelse beskytter adgangen. Dispatcherens kø genkontrollerer adgang før udførelse; kommando-id’er holdes adskilt pr. parring. Telefonapp, ejerens parringsdialog og TLS-transport mangler fortsat. Hosten viser dette som utilgængelig transport og åbner ingen fjernadgang. Se [design og afgrænsning](androidremote.da.md).
+Parring og enhedsrettigheder er nu implementeret og testet som bibliotek. Enkeltbrugsbeviser, særskilte nøgler, udløb og tilbagekaldelse beskytter adgangen. Dispatcherens kø genkontrollerer adgang før udførelse; kommando-id’er holdes adskilt pr. parring. Kontrolvinduet har nu **Administrér telefonadgang**, hvor ejeren kan oprette beviser, vælge rettigheder og tilbagekalde adgang. Android-appen og TLS-transporten mangler fortsat. Hosten viser dette som utilgængelig transport og åbner ingen fjernadgang. Se [design og afgrænsning](androidremote.da.md).

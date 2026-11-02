@@ -6,7 +6,7 @@ The first implementation is a transport-independent .NET 10 library under `Plugi
 
 ## Pairing flow
 
-1. A future local owner interface calls `BeginPairing` with a 1–80 character name without control characters and an explicit permission list.
+1. The control window’s **Manage phone access** dialog calls `BeginPairing` with a 1–80 character name without control characters and an explicit permission list.
 2. The library returns a pairing ID, random secret and expiry time. The secret is 32 cryptographically random bytes represented by 64 hexadecimal characters, not a short PIN. It lasts two minutes.
 3. The future phone transport submits the ID and secret to `CompletePairing`. At most one concurrent attempt succeeds. Five incorrect attempts cancel the pairing; malformed secrets count too.
 4. Successful pairing issues a new device ID and independent token lasting eight hours. The name and permissions come from the owner's selection; the phone cannot expand them.
@@ -39,9 +39,9 @@ The client's command UUID is deterministically mapped to an internal UUID in the
 
 ## Before phone use
 
-Remaining work includes a local pairing dialog/device list, a Danish/English Android client and separate TLS transport with verified server identity, secure pairing-secret/token transfer and secure storage on the phone. The transport must limit size, concurrency and request rate; library pairing limits do not replace these. Transport tests and physical Android testing must follow.
+Remaining work includes a Danish/English Android client and separate TLS transport with verified server identity, secure pairing-secret/token transfer and secure storage on the phone. The transport must limit size, concurrency and request rate; library pairing limits do not replace these. Transport tests and physical Android testing must follow.
 
-There are no new HTTP endpoints. Pairing and revocation are owner operations in the library, not anonymous phone APIs. The local Control Hub token must not be copied to the phone. The host still listens only on loopback; no firewall or LAN access is opened. Plugin status is `unavailable` / `transport_not_configured` with an empty action list.
+The control window uses [local owner routes](protocol.en.md). They require both the host connection key and a separate random owner key for this launch. The Stream Deck key alone cannot manage access. There is no route for a phone to redeem an invitation yet. The local Control Hub token must not be copied to the phone. The host still listens only on loopback; no firewall or LAN access is opened. Plugin status is `unavailable` / `transport_not_configured` with an empty action list.
 
 ## Tests
 

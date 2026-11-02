@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using ControlHub.Plugins.AndroidRemote.Desktop;
 
 namespace ControlHub.Desktop;
 
@@ -22,6 +23,7 @@ internal sealed class MainWindow : Form
     private readonly Button refresh = new() { AutoSize = true };
     private readonly Button install = new() { AutoSize = true };
     private readonly Button guide = new() { AutoSize = true };
+    private readonly Button phones = new() { AutoSize = true };
     private bool busy, closing, canClose;
     private bool Danish => language.SelectedIndex != 1;
     private string T(string da, string en) => Danish ? da : en;
@@ -52,6 +54,7 @@ internal sealed class MainWindow : Form
         layout.Controls.Add(hostButtons);
         layout.Controls.Add(status);
         layout.Controls.Add(install);
+        layout.Controls.Add(phones);
         layout.Controls.Add(guide);
         language.SelectedIndexChanged += (_, _) => { Translate(); ShowStoppedOrRunning(); };
         save.Click += async (_, _) => await RunAsync(() => { SaveSettings(); status.Text = T("Indstillinger gemt.", "Settings saved."); return Task.CompletedTask; });
@@ -59,6 +62,13 @@ internal sealed class MainWindow : Form
         start.Click += async (_, _) => await RunAsync(async () => { SaveSettings(); await host.StartAsync(settings); await ShowStatusAsync(); });
         stop.Click += async (_, _) => await RunAsync(async () => { await host.StopAsync(); ShowStoppedOrRunning(); });
         refresh.Click += async (_, _) => await RunAsync(ShowStatusAsync);
+        phones.Click += (_, _) =>
+        {
+            if (!host.IsRunning) { ShowStoppedOrRunning(); UpdateEnabled(); return; }
+            using var dialog = new PhoneAccessWindow(host.RemoteOwner, Danish);
+            dialog.ShowDialog(this);
+            UpdateEnabled();
+        };
         install.Click += async (_, _) => await RunAsync(() => OpenFile(Path.Combine("Plugins", "StreamDeck", "dk.thebonden.controlhub.streamDeckPlugin")));
         guide.Click += async (_, _) => await RunAsync(() => OpenFile(Path.Combine("docs", Danish ? "installation.da.html" : "installation.en.html")));
         FormClosing += async (_, e) =>
@@ -94,6 +104,7 @@ internal sealed class MainWindow : Form
         refresh.Text = T("Kontrollér forbindelse", "Check connection");
         install.Text = T("Installér Stream Deck-plugin", "Install Stream Deck plugin");
         guide.Text = T("Åbn installationsvejledning", "Open installation guide");
+        phones.Text = T("Administrér telefonadgang", "Manage phone access");
         UpdateEnabled();
     }
 
@@ -137,7 +148,7 @@ internal sealed class MainWindow : Form
     {
         var running = host.IsRunning;
         start.Enabled = save.Enabled = obsUrl.Enabled = obsPassword.Enabled = !busy && !running;
-        stop.Enabled = refresh.Enabled = !busy && running;
+        stop.Enabled = refresh.Enabled = phones.Enabled = !busy && running;
         copy.Enabled = install.Enabled = guide.Enabled = language.Enabled = !busy;
     }
 

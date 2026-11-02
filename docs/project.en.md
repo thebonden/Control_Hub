@@ -99,4 +99,4 @@ All changes go through a PR to `main`. The user-facing version is **0.0.001**; t
 
 ## AndroidRemote: first implementation stage
 
-Pairing and device permissions are now implemented and tested as a library. Single-use secrets, individual tokens, expiry and revocation control access. The dispatcher rechecks authorization after queueing; command IDs are isolated per pairing. The phone app, owner pairing dialog and TLS transport remain unimplemented. The host reports unavailable transport and opens no remote access. See the [design and scope](androidremote.en.md).
+Pairing and device permissions are now implemented and tested as a library. Single-use secrets, individual tokens, expiry and revocation control access. The dispatcher rechecks authorization after queueing; command IDs are isolated per pairing. The control window now has **Manage phone access** for creating invitations, selecting permissions and revoking access. The Android app and TLS transport remain unimplemented. The host reports unavailable transport and opens no remote access. See the [design and scope](androidremote.en.md).

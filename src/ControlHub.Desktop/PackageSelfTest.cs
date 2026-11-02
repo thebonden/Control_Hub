@@ -55,6 +55,15 @@ internal static class PackageSelfTest
                     remote.GetProperty("data").GetProperty("reason").GetString() != "transport_not_configured")
                     throw new InvalidDataException("AndroidRemote capability status failed");
                 checks.Add("AndroidRemote library reports unavailable phone transport");
+                var owner = host.RemoteOwner;
+                var invite = await owner.BeginAsync("Package test", ["status.read"]);
+                var snapshot = await owner.GetAsync();
+                if (!snapshot.PendingPairings.Any(p => p.Id == invite.Id && p.Name == "Package test") ||
+                    snapshot.TransportReady || JsonSerializer.Serialize(snapshot).Contains(invite.Secret, StringComparison.Ordinal))
+                    throw new InvalidDataException("Owner invitation status failed");
+                await owner.RemoveAsync(invite.Id, pending: true);
+                if ((await owner.GetAsync()).PendingPairings.Count != 0) throw new InvalidDataException("Owner cancellation failed");
+                checks.Add("Desktop owner creates, lists and cancels an invitation; the secret is absent from lists");
                 checks.Add("Published host starts; authenticated status works; test OBS is isolated");
                 using var other = new HostSession(testPort);
                 try { await other.StartAsync(original); throw new Exception("Duplicate host accepted"); }

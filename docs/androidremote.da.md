@@ -6,7 +6,7 @@ Første kodetrin er et transportuafhængigt .NET 10-bibliotek under `Plugins/And
 
 ## Parringsforløb
 
-1. En fremtidig lokal ejergrænseflade kalder `BeginPairing` med et navn på 1–80 tegn uden kontroltegn og en eksplicit rettighedsliste.
+1. Kontrolvinduets **Administrér telefonadgang** kalder `BeginPairing` med et navn på 1–80 tegn uden kontroltegn og en eksplicit rettighedsliste.
 2. Biblioteket returnerer et parrings-id, et tilfældigt bevis og udløbstidspunkt. Beviset er 32 kryptografisk tilfældige bytes gengivet som 64 hextegn; det er ikke en kort PIN-kode. Det gælder i to minutter.
 3. Den fremtidige telefontransport afleverer id og bevis til `CompletePairing`. Højst ét samtidigt forsøg kan lykkes. Fem forkerte forsøg annullerer parringen; ugyldigt formaterede beviser tæller også.
 4. Vellykket parring giver et nyt enheds-id og en uafhængig nøgle, som gælder i otte timer. Navn og rettigheder kommer fra ejerens valg; telefonen kan ikke udvide dem.
@@ -39,9 +39,9 @@ Klientens kommando-UUID mappes deterministisk til et internt UUID i parringens e
 
 ## Før telefonbrug
 
-Der mangler lokal parringsdialog/enhedsliste, en dansk/engelsk Android-klient og særskilt TLS-transport med verificeret serveridentitet, sikker overførsel af parringsbevis/nøgle og sikker lagring på telefonen. Transporten skal begrænse størrelse, samtidighed og forespørgselshastighed; bibliotekets parringsgrænser erstatter ikke dette. Derefter følger transporttests og fysisk Android-test.
+Der mangler en dansk/engelsk Android-klient og særskilt TLS-transport med verificeret serveridentitet, sikker overførsel af parringsbevis/nøgle og sikker lagring på telefonen. Transporten skal begrænse størrelse, samtidighed og forespørgselshastighed; bibliotekets parringsgrænser erstatter ikke dette. Derefter følger transporttests og fysisk Android-test.
 
-Der er ingen nye HTTP-endpoints. Parring og tilbagekaldelse er ejerfunktioner i biblioteket, ikke anonyme telefon-API'er. Det lokale Control Hub-token skal ikke kopieres til telefonen. Hosten lytter fortsat kun på loopback; der åbnes ingen firewall eller LAN-adgang. Pluginstatus er `unavailable` / `transport_not_configured` med tom handlingsliste.
+Kontrolvinduet bruger [lokale ejerruter](protocol.da.md). De kræver både hostens forbindelsesnøgle og en særskilt tilfældig ejernøgle, som kun gælder denne opstart. Stream Deck-nøglen alene kan ikke administrere adgang. Der er endnu ingen rute, hvor en telefon kan indløse beviset. Det lokale Control Hub-token skal ikke kopieres til telefonen. Hosten lytter fortsat kun på loopback; der åbnes ingen firewall eller LAN-adgang. Pluginstatus er `unavailable` / `transport_not_configured` med tom handlingsliste.
 
 ## Test
 

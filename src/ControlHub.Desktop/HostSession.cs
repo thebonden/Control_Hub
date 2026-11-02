@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using ControlHub.Plugins.AndroidRemote;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -10,7 +12,11 @@ namespace ControlHub.Desktop;
 internal sealed class HostSession : IDisposable
 {
     private Process? process;
-    private readonly HttpClient client = new() { Timeout = TimeSpan.FromSeconds(35) };
+    private readonly HttpClient client = new(new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false }) { Timeout = TimeSpan.FromSeconds(35) };
+    private string? ownerKey;
+    public IRemoteOwnerClient RemoteOwner => IsRunning && ownerKey is not null
+        ? new RemoteOwnerClient(client, new Uri(apiBase + "androidremote/owner/"), ownerKey)
+        : throw new InvalidOperationException("Start Control Hub først / Start Control Hub first.");
     private readonly int portNumber;
     private readonly string apiBase;
     public bool IsRunning => process is { HasExited: false };
@@ -45,6 +51,8 @@ internal sealed class HostSession : IDisposable
             RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true
         };
         start.Environment["CONTROLHUB_TOKEN"] = settings.Token;
+        ownerKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        start.Environment["CONTROLHUB_OWNER_KEY"] = ownerKey;
         start.Environment["CONTROLHUB_PORT"] = portNumber.ToString(System.Globalization.CultureInfo.InvariantCulture);
         start.Environment["CONTROLHUB_OBS_URL"] = settings.ObsUrl;
         start.Environment["CONTROLHUB_OBS_PASSWORD"] = settings.ObsPassword;
@@ -84,6 +92,7 @@ internal sealed class HostSession : IDisposable
 
     public async Task StopAsync()
     {
+        ownerKey = null;
         if (!IsRunning) return;
         process!.StandardInput.Close();
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));

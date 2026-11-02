@@ -6,4 +6,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>ControlHub</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Plugins/AndroidRemote/Desktop/ControlHub.Plugins.AndroidRemote.Desktop.csproj" />
+  </ItemGroup>
 </Project>

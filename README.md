@@ -29,7 +29,7 @@ Formålet er at give operatøren tydelige knapper, forudsigelige kommandoer og �
 | PowerPoint COM | Næste, forrige, gå til slide, sort skærm, genoptag og status via en STA-tråd | Windows; præcis ét eksisterende slideshow; endnu ikke livegodkendt |
 | OBS WebSocket v5 | Godkendelse, scenevalg, start/stop optagelse og udsendelse, eksplicit lyd fra/til, status | Kun lokal OBS; ny forbindelse pr. forespørgsel; endnu ikke livegodkendt |
 | Stream Deck | 12 handlinger, danske/engelske indstillinger, resultatfeedback, statusknap og installationspakke | Indlæsning verificeret lokalt; samlet hardwareaccept afventer |
-| AndroidRemote | Testet bibliotek til parring, enhedsrettigheder, udløb, tilbagekaldelse og kommandokontrol | Ingen Android-app, parringsdialog eller telefontransport endnu |
+| AndroidRemote | Windows-vindue til parringsbeviser og tilbagekaldelse, lokale ejerruter og testet enhedsadgang | Ingen Android-app eller telefontransport endnu |
 | Lyd, Logitech, Android Live, fysisk fjernkontrol, Flux Keyboard | Mapper, integrationsplaner og statuspladsholdere | Ingen fungerende enhedsdrivere endnu |
 
 OBS-lydstyring gælder navngivne OBS-lydkilder. Det separate lydplugin til operativsystemets enheder er fortsat planlagt. Stream Deck kører som en ekstern klient under `Plugins/StreamDeck/`; det optræder derfor ikke som en hardwareforbundet C#-pluginstatus.
